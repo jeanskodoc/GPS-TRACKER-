@@ -16,10 +16,12 @@
             min-height: 100vh;
             background: linear-gradient(145deg, #0a0a0f 0%, #151522 100%);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         /* Effet de particules subtil */
@@ -41,7 +43,8 @@
         .image-container {
             position: relative;
             max-width: 90vw;
-            max-height: 90vh;
+            max-height: 70vh;
+            margin-bottom: 40px;
             padding: 40px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 30px;
@@ -67,7 +70,7 @@
         .main-image {
             display: block;
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 60vh;
             border-radius: 15px;
             box-shadow: 
                 0 15px 35px rgba(0, 0, 0, 0.4),
@@ -146,6 +149,130 @@
                 shimmer 4s ease-in-out infinite 2s;
         }
         
+        /* Bouton fixé en bas */
+        .gps-access-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 22px 60px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 18px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.5px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        /* Icône du bouton */
+        .btn-icon {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .btn-text {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Effets au survol */
+        .gps-access-btn:hover {
+            transform: translateX(-50%) translateY(-5px) scale(1.03);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 
+                0 20px 50px rgba(59, 130, 246, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        .gps-access-btn:hover .btn-icon {
+            transform: translateX(3px) rotate(-5deg);
+        }
+        
+        /* Effet au clic */
+        .gps-access-btn:active {
+            transform: translateX(-50%) translateY(-2px) scale(0.98);
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 8px 25px rgba(59, 130, 246, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animation de pulsation subtile */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 
+                    0 10px 30px rgba(59, 130, 246, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 10px 40px rgba(59, 130, 246, 0.6),
+                    0 0 0 1px rgba(255, 255, 255, 0.15);
+            }
+            100% {
+                box-shadow: 
+                    0 10px 30px rgba(59, 130, 246, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        .gps-access-btn {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        /* Effet de lueur derrière le bouton */
+        .gps-access-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+            border-radius: 25px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gps-access-btn:hover::after {
+            opacity: 1;
+        }
+        
+        /* Animation d'apparition du bouton */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .gps-access-btn {
+            animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s both,
+                     pulse-glow 3s ease-in-out infinite 1.3s;
+        }
+        
         /* Indication de chargement */
         .loading {
             position: fixed;
@@ -165,11 +292,25 @@
                 padding: 30px;
                 border-radius: 25px;
                 max-width: 95vw;
-                max-height: 95vh;
+                max-height: 60vh;
+                margin-bottom: 30px;
             }
             
             .main-image {
-                max-height: 85vh;
+                max-height: 50vh;
+            }
+            
+            .gps-access-btn {
+                bottom: 25px;
+                padding: 20px 50px;
+                font-size: 18px;
+                border-radius: 16px;
+                width: 90%;
+                max-width: 400px;
+            }
+            
+            .btn-icon {
+                font-size: 22px;
             }
         }
         
@@ -177,6 +318,25 @@
             .image-container {
                 padding: 20px;
                 border-radius: 20px;
+                max-height: 55vh;
+                margin-bottom: 20px;
+            }
+            
+            .main-image {
+                max-height: 45vh;
+            }
+            
+            .gps-access-btn {
+                bottom: 20px;
+                padding: 18px 30px;
+                font-size: 16px;
+                border-radius: 14px;
+                width: 95%;
+                gap: 12px;
+            }
+            
+            .btn-icon {
+                font-size: 20px;
             }
             
             @keyframes float {
@@ -194,10 +354,17 @@
             .image-container {
                 padding: 20px;
                 max-height: 85vh;
+                margin-bottom: 15px;
             }
             
             .main-image {
                 max-height: 75vh;
+            }
+            
+            .gps-access-btn {
+                bottom: 15px;
+                padding: 15px 40px;
+                font-size: 16px;
             }
         }
     </style>
@@ -209,16 +376,39 @@
         <img src="TRASEUR.png" alt="TRASEUR" class="main-image" id="main-image">
     </div>
 
+    <!-- Bouton d'accès GPS -->
+    <a href="https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/" 
+       class="gps-access-btn" 
+       id="gps-link" 
+       target="_blank">
+        <span class="btn-icon">📍</span>
+        <span class="btn-text">Accéder au Traceur GPS</span>
+    </a>
+
     <!-- Indication de chargement -->
     <div class="loading" id="loading">
         Chargement de l'image...
     </div>
 
     <script>
+        // Générer un code d'accès sécurisé
+        function generateAccessCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = 'GPS-';
+            
+            for (let i = 0; i < 12; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+                if ((i + 1) % 4 === 0 && i < 11) code += '-';
+            }
+            
+            return code;
+        }
+        
         // Initialiser l'application
         function initApp() {
             const image = document.getElementById('main-image');
             const loading = document.getElementById('loading');
+            const gpsLink = document.getElementById('gps-link');
             
             // Afficher l'indication de chargement
             loading.style.opacity = '1';
@@ -253,7 +443,53 @@
                 }, 2000);
             }
             
-            // Effet sonore au survol
+            // Vérifier si un code existe déjà pour le bouton GPS
+            const savedCode = localStorage.getItem('gpsAccessCode');
+            const savedTime = localStorage.getItem('codeTime');
+            
+            let currentCode;
+            
+            if (savedCode && savedTime) {
+                const timeDiff = (Date.now() - new Date(savedTime).getTime()) / (1000 * 60 * 60);
+                if (timeDiff >= 24) {
+                    currentCode = generateAccessCode();
+                    localStorage.setItem('gpsAccessCode', currentCode);
+                    localStorage.setItem('codeTime', new Date().toISOString());
+                } else {
+                    currentCode = savedCode;
+                }
+            } else {
+                currentCode = generateAccessCode();
+                localStorage.setItem('gpsAccessCode', currentCode);
+                localStorage.setItem('codeTime', new Date().toISOString());
+            }
+            
+            // Mettre à jour le lien avec le code
+            gpsLink.href = `https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/?code=${encodeURIComponent(currentCode)}`;
+            
+            // Effet sonore sur le bouton GPS
+            gpsLink.addEventListener('mouseenter', () => {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 600;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } catch (e) {
+                    // Audio non supporté
+                }
+            });
+            
+            // Effet sonore sur l'image
             image.addEventListener('mouseenter', () => {
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -275,7 +511,7 @@
                 }
             });
             
-            // Effet de zoom au clic
+            // Effet de zoom au clic sur l'image
             let isZoomed = false;
             image.addEventListener('click', () => {
                 if (isZoomed) {
@@ -308,15 +544,16 @@
                 }
             });
             
-            // Animation d'apparition progressive
-            document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 1s ease';
+            // Effet de préparation au clic sur le bouton GPS
+            gpsLink.addEventListener('mousedown', () => {
+                gpsLink.style.transform = 'translateX(-50%) scale(0.95)';
+            });
             
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
+            gpsLink.addEventListener('mouseup', () => {
+                gpsLink.style.transform = 'translateX(-50%) translateY(-5px) scale(1.03)';
+            });
             
-            // Gestion du clic droit (protection optionnelle)
+            // Gestion du clic droit sur l'image (protection optionnelle)
             image.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 
@@ -346,6 +583,14 @@
                     // Audio non supporté
                 }
             });
+            
+            // Animation d'apparition progressive
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.8s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
         }
         
         // Démarrer l'application
@@ -353,16 +598,6 @@
         
         // Améliorer l'expérience mobile
         document.addEventListener('touchstart', function() {}, {passive: true});
-        
-        // Prévenir le zoom avec deux doigts
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
     </script>
 </body>
 </html>
