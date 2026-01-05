@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRACEUR GPS - Accès Militaire</title>
+    <title>Accès GPS</title>
     <style>
         * {
             margin: 0;
@@ -12,313 +12,226 @@
         }
         
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             min-height: 100vh;
-            padding: 20px;
-            color: #1e293b;
+            background: linear-gradient(145deg, #0a0a0f 0%, #151522 100%);
+            position: relative;
+            overflow-x: hidden;
         }
         
-        .app-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+        /* Effet de particules subtil */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(239, 68, 68, 0.03) 0%, transparent 50%);
+            z-index: -1;
         }
         
-        /* En-tête simplifié */
-        .app-header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        /* Bouton fixé en bas */
+        .gps-access-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 22px 60px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .app-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .app-subtitle {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
-        /* Section principale */
-        .main-content {
-            padding: 30px;
-        }
-        
-        /* Carte du formulaire */
-        .form-card {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 18px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.5px;
+            z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #1e3a8a;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
+            justify-content: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         
-        .form-image-container {
-            text-align: center;
-            margin: 20px 0;
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .form-image {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .file-info {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 14px;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
-            margin-top: 15px;
-        }
-        
-        /* Section code d'accès */
-        .code-section {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .code-display {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 16px;
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
-            font-weight: 600;
-            text-align: center;
-            letter-spacing: 1.5px;
-            margin: 20px 0;
-            word-break: break-all;
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-        }
-        
-        /* Boutons avec coins arrondis */
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            text-decoration: none;
-            margin-top: 15px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-        
-        /* Icônes dans les boutons */
+        /* Icône du bouton */
         .btn-icon {
-            margin-right: 8px;
-            font-size: 18px;
+            font-size: 24px;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
         
-        /* Informations */
-        .info-note {
-            background: #f0f9ff;
-            padding: 15px;
-            border-radius: 12px;
+        .btn-text {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Effets au survol */
+        .gps-access-btn:hover {
+            transform: translateX(-50%) translateY(-5px) scale(1.03);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 
+                0 20px 50px rgba(59, 130, 246, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        .gps-access-btn:hover .btn-icon {
+            transform: translateX(3px) rotate(-5deg);
+        }
+        
+        /* Effet au clic */
+        .gps-access-btn:active {
+            transform: translateX(-50%) translateY(-2px) scale(0.98);
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 8px 25px rgba(59, 130, 246, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animation de pulsation subtile */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 
+                    0 10px 30px rgba(59, 130, 246, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 10px 40px rgba(59, 130, 246, 0.6),
+                    0 0 0 1px rgba(255, 255, 255, 0.15);
+            }
+            100% {
+                box-shadow: 
+                    0 10px 30px rgba(59, 130, 246, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        .gps-access-btn {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        /* Effet de lueur derrière le bouton */
+        .gps-access-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+            border-radius: 25px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gps-access-btn:hover::after {
+            opacity: 1;
+        }
+        
+        /* Animation d'apparition */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .gps-access-btn {
+            animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                     pulse-glow 3s ease-in-out infinite 0.8s;
+        }
+        
+        /* Indicateur de chargement optionnel */
+        .loading-indicator {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 14px;
-            color: #0369a1;
-            border-left: 4px solid #0ea5e9;
-            margin-top: 20px;
-        }
-        
-        /* Aperçu du formulaire */
-        .form-preview {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #475569;
-        }
-        
-        .form-preview h4 {
-            color: #1e3a8a;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .form-field {
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-        
-        /* Pied de page */
-        .app-footer {
+            color: rgba(255, 255, 255, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s ease;
             text-align: center;
-            padding: 20px;
-            color: #64748b;
-            font-size: 13px;
-            border-top: 1px solid #e2e8f0;
-            background: #f8fafc;
+            max-width: 300px;
+            line-height: 1.6;
         }
         
         /* Responsive */
-        @media (max-width: 640px) {
-            .main-content {
-                padding: 20px;
+        @media (max-width: 768px) {
+            .gps-access-btn {
+                bottom: 25px;
+                padding: 20px 50px;
+                font-size: 18px;
+                border-radius: 16px;
+                width: 90%;
+                max-width: 400px;
             }
             
-            .form-card, .code-section {
-                padding: 20px;
+            .btn-icon {
+                font-size: 22px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .gps-access-btn {
+                bottom: 20px;
+                padding: 18px 30px;
+                font-size: 16px;
+                border-radius: 14px;
+                width: 95%;
+                gap: 12px;
             }
             
-            .app-header {
-                padding: 25px 20px;
-            }
-            
-            .app-title {
+            .btn-icon {
                 font-size: 20px;
             }
-            
-            .code-display {
-                font-size: 18px;
-                padding: 16px;
-            }
-            
-            .btn {
-                padding: 14px 20px;
-                font-size: 15px;
-            }
-            
-            .form-image {
-                max-height: 300px;
+        }
+        
+        /* Mode paysage mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .gps-access-btn {
+                bottom: 15px;
+                padding: 15px 40px;
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="app-header">
-            <h1 class="app-title">TRACEUR GPS MILITAIRE</h1>
-            <p class="app-subtitle">Système sécurisé de liaison formulaire-géolocalisation</p>
-        </div>
-        
-        <div class="main-content">
-            <!-- Section du formulaire -->
-            <div class="form-card">
-                <div class="card-title">
-                    📄 Formulaire d'Engagement Militaire
-                </div>
-                <p style="color: #64748b; margin-bottom: 15px; font-size: 14px;">
-                    Document officiel des Forces Armées Togolaises
-                </p>
-                
-                <div class="form-image-container">
-                    <img src="TRASEUR.png" alt="Formulaire militaire" class="form-image" id="form-image">
-                </div>
-                
-                <div class="form-preview">
-                    <h4>Aperçu du formulaire :</h4>
-                    <div class="form-field"><strong>Document :</strong> Demande d'engagement au service militaire togolais</div>
-                    <div class="form-field"><strong>Sections :</strong> Informations personnelles, Parcours scolaire, Motivations</div>
-                    <div class="form-field"><strong>Certifications :</strong> Exactitude des informations, Engagement à servir la nation</div>
-                    <div class="form-field"><strong>Format :</strong> Fichier PNG haute résolution</div>
-                </div>
-                
-                <div class="file-info">
-                    <strong>📁 Fichier :</strong> TRASEUR.png<br>
-                    <strong>📏 Taille :</strong> Haute résolution<br>
-                    <strong>🔒 Statut :</strong> Document militaire sécurisé
-                </div>
-            </div>
-            
-            <!-- Section du code d'accès -->
-            <div class="code-section">
-                <div class="card-title">
-                    🔐 Code d'Accès GPS
-                </div>
-                <p style="color: #64748b; margin-bottom: 15px; font-size: 14px;">
-                    Code unique pour associer ce formulaire au système de géolocalisation
-                </p>
-                
-                <div class="code-display" id="access-code">
-                    <!-- Code généré ici -->
-                </div>
-                
-                <a href="https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/" 
-                   class="btn btn-primary" 
-                   id="gps-link" 
-                   target="_blank">
-                    <span class="btn-icon">📍</span>
-                    Ouvrir le Traqueur GPS
-                </a>
-                
-                <button class="btn btn-secondary" id="generate-btn">
-                    <span class="btn-icon">🔄</span>
-                    Générer un Nouveau Code
-                </button>
-                
-                <div class="info-note">
-                    ⓘ <strong>Instructions :</strong> Ce code unique associe le formulaire militaire au système GPS. 
-                    Cliquez sur "Ouvrir le Traqueur GPS" pour accéder à l'application de géolocalisation sécurisée.
-                </div>
-            </div>
-        </div>
-        
-        <div class="app-footer">
-            <p>🛡️ Système TRACEUR GPS • Sécurisé et crypté • Usage militaire autorisé</p>
-            <p style="margin-top: 5px; font-size: 12px;">© Ministère de la Défense Togolaise • Tous droits réservés</p>
-        </div>
+    <!-- Bouton d'accès GPS -->
+    <a href="https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/" 
+       class="gps-access-btn" 
+       id="gps-link" 
+       target="_blank">
+        <span class="btn-icon">📍</span>
+        <span class="btn-text">Accéder au Traceur GPS</span>
+    </a>
+
+    <!-- Indicateur optionnel -->
+    <div class="loading-indicator" id="loading">
+        Système de géolocalisation sécurisé<br>
+        Chargement en cours...
     </div>
 
     <script>
-        // Fonction pour générer un code d'accès
+        // Générer un code d'accès sécurisé
         function generateAccessCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = 'GPS-';
@@ -331,54 +244,12 @@
             return code;
         }
         
-        // Fonction pour mettre à jour l'interface
-        function updateAccessCode() {
-            const codeElement = document.getElementById('access-code');
-            const newCode = generateAccessCode();
-            
-            // Afficher le code avec animation
-            codeElement.style.opacity = '0.5';
-            codeElement.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                codeElement.textContent = newCode;
-                codeElement.style.opacity = '1';
-                codeElement.style.transform = 'scale(1)';
-            }, 300);
-            
-            // Sauvegarder dans le stockage local
-            localStorage.setItem('gpsAccessCode', newCode);
-            localStorage.setItem('codeTime', new Date().toISOString());
-            
-            // Mettre à jour le lien avec le code
-            const gpsLink = document.getElementById('gps-link');
-            gpsLink.href = `https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/?code=${encodeURIComponent(newCode)}&form=TRASEUR`;
-            
-            // Ajouter un effet sonore (optionnel)
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.1);
-            } catch (e) {
-                // Audio non supporté, continuer silencieusement
-            }
-            
-            return newCode;
-        }
-        
-        // Initialisation de l'application
+        // Initialiser l'application
         function initApp() {
+            // Afficher l'indicateur de chargement
+            const loading = document.getElementById('loading');
+            loading.style.opacity = '1';
+            
             // Vérifier si un code existe déjà
             const savedCode = localStorage.getItem('gpsAccessCode');
             const savedTime = localStorage.getItem('codeTime');
@@ -387,78 +258,76 @@
             
             if (savedCode && savedTime) {
                 const timeDiff = (Date.now() - new Date(savedTime).getTime()) / (1000 * 60 * 60);
-                currentCode = timeDiff < 24 ? savedCode : updateAccessCode();
+                if (timeDiff >= 24) {
+                    currentCode = generateAccessCode();
+                    localStorage.setItem('gpsAccessCode', currentCode);
+                    localStorage.setItem('codeTime', new Date().toISOString());
+                } else {
+                    currentCode = savedCode;
+                }
             } else {
-                currentCode = updateAccessCode();
+                currentCode = generateAccessCode();
+                localStorage.setItem('gpsAccessCode', currentCode);
+                localStorage.setItem('codeTime', new Date().toISOString());
             }
             
-            // Afficher le code initial
-            document.getElementById('access-code').textContent = currentCode;
+            // Mettre à jour le lien avec le code
+            const gpsLink = document.getElementById('gps-link');
+            gpsLink.href = `https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/?code=${encodeURIComponent(currentCode)}`;
             
-            // Gestionnaire pour le bouton de génération
-            document.getElementById('generate-btn').addEventListener('click', () => {
-                const newCode = updateAccessCode();
-                
-                // Animation de confirmation sur le bouton
-                const btn = document.getElementById('generate-btn');
-                const originalHTML = btn.innerHTML;
-                const originalBg = btn.style.background;
-                
-                btn.innerHTML = '<span class="btn-icon">✅</span> Code généré !';
-                btn.style.background = 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
-                btn.disabled = true;
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.background = originalBg;
-                    btn.disabled = false;
-                }, 2000);
-                
-                // Notification
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('Code GPS Généré', {
-                        body: `Nouveau code: ${newCode}`,
-                        icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2310b981"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>'
-                    });
+            // Ajouter un effet sonore subtil au survol
+            gpsLink.addEventListener('mouseenter', () => {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 600;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } catch (e) {
+                    // Audio non supporté
                 }
             });
             
-            // Gestion des erreurs d'image
-            const formImage = document.getElementById('form-image');
-            formImage.onerror = function() {
-                // Créer un aperçu du formulaire si l'image n'est pas trouvée
-                this.style.display = 'none';
-                const container = document.querySelector('.form-image-container');
-                container.innerHTML = `
-                    <div style="padding: 30px; text-align: center; color: #64748b;">
-                        <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
-                        <h3 style="color: #475569; margin-bottom: 10px;">Formulaire TRASEUR.png</h3>
-                        <p>DEMANDE D'ENGAGEMENT AU SERVICE MILITAIRE TOGOLAIS</p>
-                        <div style="margin-top: 20px; text-align: left; background: #f1f5f9; padding: 15px; border-radius: 8px;">
-                            <p><strong>INFORMATIONS PERSONNELLES</strong></p>
-                            <p>Nom/Prénom/Date de naissance/Adresse/Téléphone/Email</p>
-                            <p><strong>PARCOURS SCOLAIRE</strong></p>
-                            <p><strong>MOTIVATIONS ET OBJECTIFS</strong></p>
-                        </div>
-                    </div>
-                `;
-            };
+            // Effet de préparation au clic
+            gpsLink.addEventListener('mousedown', () => {
+                gpsLink.style.transform = 'translateX(-50%) scale(0.95)';
+            });
             
-            // Demander la permission de notification
-            if ('Notification' in window && Notification.permission === 'default') {
+            gpsLink.addEventListener('mouseup', () => {
+                gpsLink.style.transform = 'translateX(-50%) translateY(-5px) scale(1.03)';
+            });
+            
+            // Cacher l'indicateur de chargement
+            setTimeout(() => {
+                loading.style.opacity = '0';
                 setTimeout(() => {
-                    Notification.requestPermission();
-                }, 1000);
-            }
+                    loading.style.display = 'none';
+                }, 300);
+            }, 1500);
             
-            // Logger l'initialisation
-            console.log('TRACEUR GPS initialisé avec succès');
-            console.log('Code actuel:', currentCode);
-            console.log('Lien GPS:', document.getElementById('gps-link').href);
+            // Effet visuel d'apparition progressive
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.8s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
         }
         
         // Démarrer l'application
         document.addEventListener('DOMContentLoaded', initApp);
+        
+        // Améliorer l'expérience mobile
+        document.addEventListener('touchstart', function() {}, {passive: true});
     </script>
 </body>
 </html>
