@@ -1,0 +1,3467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoHISTORY Pro MIL V2 - Commandement FAT</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --fat-green: #006400;
+            --fat-gold: #FFD700;
+            --fat-red: #8B0000;
+            --fat-blue: #1E3A8A;
+            --fat-dark: #0A0A0A;
+            --fat-light: #F8FAFC;
+            --fat-warning: #D69E2E;
+            --fat-success: #38A169;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+        }
+        
+        body { 
+            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
+            color: var(--fat-light);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Header militaire amélioré */
+        .header { 
+            background: linear-gradient(90deg, #000000 0%, #1a365d 50%, #000000 100%);
+            padding: 0.5rem 1.2rem;
+            border-bottom: 3px solid var(--fat-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 55px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.9);
+            position: relative;
+            z-index: 1002;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255,215,0,0.1) 2px,
+                rgba(255,215,0,0.1) 4px
+            );
+            pointer-events: none;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .military-icon {
+            font-size: 1.8rem;
+            color: var(--fat-gold);
+            filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
+        }
+        
+        .header h1 { 
+            font-size: 1.2rem; 
+            color: var(--fat-gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 1.5px;
+        }
+        
+        .header h2 { 
+            font-size: 0.8rem; 
+            color: #E2E8F0;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        
+        .security-badge {
+            background: linear-gradient(135deg, var(--fat-red) 0%, #B22222 100%);
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 2px solid var(--fat-gold);
+            box-shadow: 0 0 10px rgba(255,215,0,0.4);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .security-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255,255,255,0.1) 50%,
+                transparent 70%
+            );
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        /* Conteneur principal compact */
+        .container { 
+            display: flex; 
+            height: calc(100vh - 55px);
+        }
+        
+        /* Sidebar améliorée et compacte */
+        .sidebar { 
+            width: 350px; 
+            background: rgba(10, 25, 47, 0.98);
+            padding: 0.8rem;
+            overflow-y: auto;
+            border-right: 2px solid var(--fat-gold);
+            box-shadow: 5px 0 20px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1001;
+        }
+        
+        .sidebar.collapsed { 
+            width: 0;
+            padding: 0;
+            border-right: none;
+            transform: translateX(-100%);
+            overflow: hidden;
+        }
+        
+        /* Panels compacts améliorés */
+        .panel { 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(255,215,0,0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 3px 15px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--fat-red), var(--fat-gold));
+        }
+        
+        .panel h3 { 
+            color: var(--fat-gold);
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            padding-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        /* Onglets compacts améliorés */
+        .tab-container { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.25rem;
+            margin-bottom: 0.8rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 5px;
+            padding: 0.25rem;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+        
+        .tab { 
+            padding: 0.5rem 0.4rem;
+            cursor: pointer; 
+            text-align: center;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            color: #94A3B8;
+        }
+        
+        .tab:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(255,215,0,0.3);
+            color: white;
+        }
+        
+        .tab.active { 
+            background: linear-gradient(135deg, var(--fat-blue) 0%, #2D4B8E 100%);
+            border-color: var(--fat-gold);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+            color: var(--fat-gold);
+        }
+        
+        .tab-content { 
+            display: none; 
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .tab-content.active { 
+            display: block; 
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Boutons compacts améliorés */
+        .btn { 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            background: linear-gradient(135deg, var(--fat-blue) 0%, #2D4B8E 100%);
+            color: white;
+            padding: 0.5rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin: 0.1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            height: 32px;
+            min-width: 80px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.2),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #2D4B8E 0%, var(--fat-blue) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--fat-red) 0%, #A52A2A 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--fat-success) 0%, #2E8B57 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--fat-warning) 0%, #B8860B 100%);
+            color: #000;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+        
+        .btn-icon {
+            min-width: 32px;
+            width: 32px;
+            padding: 0.5rem;
+        }
+        
+        /* Inputs compacts */
+        input, textarea, select {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 0.6rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 4px;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--fat-gold);
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+            background: rgba(15, 23, 42, 1);
+        }
+        
+        /* Liste positions compacte */
+        .position-list { 
+            max-height: 150px; 
+            overflow-y: auto; 
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255,215,0,0.1);
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .position-item { 
+            background: rgba(30, 41, 59, 0.9);
+            padding: 0.6rem;
+            margin: 0.3rem;
+            border-radius: 4px;
+            border-left: 4px solid var(--fat-gold);
+            cursor: pointer; 
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .position-item:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateX(3px);
+            border-left-color: var(--fat-red);
+        }
+        
+        .position-item.active {
+            background: rgba(59, 130, 246, 0.4);
+            border-left-color: var(--fat-gold);
+        }
+        
+        /* Statistiques transport compactes */
+        .transport-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        
+        .transport-stat {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.6rem;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid rgba(255,215,0,0.2);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .transport-stat:hover {
+            border-color: var(--fat-gold);
+            transform: translateY(-2px);
+        }
+        
+        .transport-stat.active {
+            border-color: var(--fat-gold);
+            background: rgba(30, 58, 138, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .transport-icon { 
+            font-size: 1.4rem; 
+            margin-bottom: 0.3rem;
+        }
+        
+        .transport-distance { 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            color: var(--fat-gold);
+            margin-bottom: 0.2rem;
+        }
+        
+        .transport-duration { 
+            font-size: 0.7rem; 
+            color: #94A3B8;
+        }
+        
+        /* Statistiques générales */
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            margin-top: 0.6rem;
+        }
+        
+        .stat-item {
+            background: rgba(30, 58, 138, 0.3);
+            padding: 0.6rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--fat-gold);
+        }
+        
+        .stat-label {
+            font-size: 0.65rem;
+            color: #94A3B8;
+        }
+        
+        /* Carte */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative;
+            background: #000;
+        }
+        
+        .map-container { 
+            flex: 1; 
+            position: relative;
+        }
+        
+        #map { 
+            width: 100%; 
+            height: 100%;
+        }
+        
+        /* Affichage coordonnées amélioré */
+        .coordinates-display {
+            background: rgba(10, 25, 47, 0.95);
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 1000;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            border: 2px solid var(--fat-gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            min-width: 220px;
+        }
+        
+        .coordinates-display div {
+            line-height: 1.3;
+        }
+        
+        /* Contrôles carte améliorés */
+        .map-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .map-control-btn {
+            background: rgba(10, 25, 47, 0.95);
+            color: var(--fat-gold);
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            border: 2px solid var(--fat-gold);
+        }
+        
+        .map-control-btn:hover {
+            background: rgba(30, 58, 138, 0.9);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+        
+        /* Contrôles trajectoire */
+        .trajectory-controls {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 5px;
+            background: rgba(10, 25, 47, 0.95);
+            padding: 6px;
+            border-radius: 4px;
+            border: 2px solid var(--fat-gold);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+        
+        /* Sidebar toggle */
+        .toggle-sidebar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(10, 25, 47, 0.95);
+            color: var(--fat-gold);
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid var(--fat-gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        
+        .toggle-sidebar:hover {
+            background: var(--fat-blue);
+            transform: scale(1.1);
+        }
+        
+        /* Barre de statut améliorée */
+        .status-bar { 
+            background: linear-gradient(90deg, #000 0%, #1a365d 50%, #000 100%);
+            padding: 0.4rem 1rem;
+            border-top: 2px solid var(--fat-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            height: 35px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        
+        .status-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 10px #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Instructions compactes */
+        .instructions-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 25, 47, 0.95);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 6px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            border: 2px solid var(--fat-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            display: none;
+            font-size: 0.8rem;
+        }
+        
+        .instructions-header {
+            color: var(--fat-gold);
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            border-bottom: 1px solid rgba(255,215,0,0.3);
+            padding-bottom: 0.4rem;
+        }
+        
+        /* Footer compact */
+        .footer {
+            background: linear-gradient(90deg, #000 0%, #111 100%);
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--fat-gold);
+            border-top: 1px solid rgba(255,215,0,0.3);
+            letter-spacing: 0.8px;
+        }
+        
+        /* Scrollbar personnalisée */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--fat-gold) 0%, #B8860B 100%);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #FFD700 0%, var(--fat-gold) 100%);
+        }
+        
+        /* Mode plein écran */
+        body.fullscreen .header,
+        body.fullscreen .sidebar,
+        body.fullscreen .status-bar,
+        body.fullscreen .toggle-sidebar,
+        body.fullscreen .instructions-panel,
+        body.fullscreen .footer {
+            display: none;
+        }
+        
+        body.fullscreen .container { 
+            height: 100vh;
+        }
+        
+        /* Animation pour les marqueurs */
+        @keyframes markerPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-marker {
+            animation: markerPulse 2s infinite;
+        }
+        
+        /* Style pour les étiquettes */
+        .leaflet-label {
+            background: rgba(10, 25, 47, 0.95);
+            border: 1px solid var(--fat-gold);
+            border-radius: 3px;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        /* Style pour les trajectoires entre deux points */
+        .two-point-trajectory {
+            stroke-dasharray: 10, 10;
+            animation: dash 1s linear infinite;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
+        
+        /* Panneau de simulation */
+        .simulation-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(10, 25, 47, 0.95);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 6px;
+            width: 250px;
+            z-index: 1000;
+            border: 2px solid var(--fat-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            display: none;
+        }
+        
+        .simulation-header {
+            color: var(--fat-gold);
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            border-bottom: 1px solid rgba(255,215,0,0.3);
+            padding-bottom: 0.4rem;
+        }
+        
+        .simulation-controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .simulation-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .simulation-info {
+            font-size: 0.75rem;
+            margin-top: 5px;
+            color: #94A3B8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: absolute;
+                z-index: 1001;
+                height: calc(100vh - 55px);
+                width: 320px;
+            }
+            
+            .transport-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .coordinates-display {
+                font-size: 0.7rem;
+                min-width: 180px;
+                padding: 0.4rem 0.6rem;
+            }
+            
+            .simulation-panel {
+                top: 120px;
+                right: 10px;
+                width: 220px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .header h2 {
+                font-size: 0.7rem;
+            }
+            
+            .security-badge {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+            
+            .trajectory-controls {
+                top: 70px;
+            }
+            
+            .simulation-panel {
+                top: 150px;
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="military-icon">⚔️</div>
+            <div>
+                <h1>FORCES ARMÉES TOGOLAISES</h1>
+                <h2>Système de Géolocalisation Militaire Intégré</h2>
+            </div>
+        </div>
+        <div class="security-badge">NIVEAU: CONFIDENTIEL</div>
+    </div>
+    
+    <!-- Conteneur principal -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <!-- Onglets -->
+            <div class="tab-container">
+                <div class="tab active" onclick="switchTab('data')" title="Données">📁 DONNÉES</div>
+                <div class="tab" onclick="switchTab('trajectory')" title="Trajectoire">🛤️ TRAJECTOIRE</div>
+                <div class="tab" onclick="switchTab('map')" title="Carte">🗺️ CARTE</div>
+                <div class="tab" onclick="switchTab('tools')" title="Outils">⚙️ OUTILS</div>
+            </div>
+            
+            <!-- Onglet Données -->
+            <div id="data-tab" class="tab-content active">
+                <div class="panel">
+                    <h3><i class="fas fa-database"></i> CHARGER DONNÉES</h3>
+                    <textarea id="textInput" placeholder="Collez les données GPS ici au format:
+Coordonnées GPS:
+Latitude: 9.551017
+Longitude: 1.194132
+Précision: ±10m
+Vitesse: 0.0 km/h" rows="6"></textarea>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="parseTextData()">
+                            <i class="fas fa-chart-bar"></i> Extraire
+                        </button>
+                        <button class="btn" onclick="simulateFileUpload()">
+                            <i class="fas fa-file-upload"></i> Simuler
+                        </button>
+                        <button class="btn" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button class="btn" onclick="exportToKML()">
+                            <i class="fas fa-globe-americas"></i> KML
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3><i class="fas fa-map-marker-alt"></i> POSITIONS</h3>
+                    <div id="positionCount" style="margin: 0.5rem 0; color: var(--fat-gold); font-weight: bold; font-size: 0.8rem;">
+                        0 positions enregistrées
+                    </div>
+                    <div class="position-list" id="positionList"></div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="addNewPosition()">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                        <button class="btn btn-danger" onclick="clearAllPositions()">
+                            <i class="fas fa-trash"></i> Effacer
+                        </button>
+                        <button class="btn" onclick="zoomToAllPositions()">
+                            <i class="fas fa-search-location"></i> Tout voir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Onglet Trajectoire -->
+            <div id="trajectory-tab" class="tab-content">
+                <div class="panel">
+                    <h3><i class="fas fa-route"></i> PLANIFICATION</h3>
+                    <input type="text" id="trajectoryName" placeholder="Nom de la mission" value="Opération Éclair">
+                    
+                    <div class="transport-stats" id="transportStats">
+                        <!-- Stats dynamiques -->
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="createNewTrajectory()">
+                            <i class="fas fa-plus-circle"></i> Nouvelle
+                        </button>
+                        <button class="btn btn-warning" onclick="calculateAllRoutes()">
+                            <i class="fas fa-route"></i> Calculer
+                        </button>
+                        <button class="btn" onclick="optimizeRoute()">
+                            <i class="fas fa-bolt"></i> Optimiser
+                        </button>
+                        <button class="btn" onclick="startTrajectorySimulation()">
+                            <i class="fas fa-play"></i> Simuler
+                        </button>
+                        <button class="btn btn-danger" onclick="clearTrajectory()">
+                            <i class="fas fa-trash"></i> Effacer
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3><i class="fas fa-map-pin"></i> POINTS DE PASSAGE</h3>
+                    <div id="trajectoryPointsList" class="position-list"></div>
+                    <div class="btn-group">
+                        <button class="btn" onclick="toggleTrajectoryMode()" id="trajectoryModeBtn">
+                            <i class="fas fa-draw-polygon"></i> Mode
+                        </button>
+                        <button class="btn" onclick="addPointAtCenter()">
+                            <i class="fas fa-crosshairs"></i> Ajouter
+                        </button>
+                        <button class="btn" onclick="reverseTrajectory()">
+                            <i class="fas fa-exchange-alt"></i> Inverser
+                        </button>
+                        <button class="btn" onclick="toggleLabelDisplay()" id="labelDisplayBtn">
+                            <i class="fas fa-tag"></i> Étiquettes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Onglet Carte -->
+            <div id="map-tab" class="tab-content">
+                <div class="panel">
+                    <h3><i class="fas fa-layer-group"></i> COUCHES CARTO</h3>
+                    <select id="mapType" onchange="changeMapType(this.value)">
+                        <option value="topo">Topographique</option>
+                        <option value="satellite">Satellite</option>
+                        <option value="terrain">Terrain</option>
+                        <option value="streets">Rues</option>
+                        <option value="night">Nocturne</option>
+                    </select>
+                    <div class="btn-group">
+                        <button class="btn" onclick="toggleGrid()">
+                            <i class="fas fa-th"></i> Grille
+                        </button>
+                        <button class="btn" onclick="toggleHeatmap()">
+                            <i class="fas fa-fire"></i> Thermique
+                        </button>
+                        <button class="btn" onclick="centerOnTogo()">
+                            <i class="fas fa-flag"></i> Togo
+                        </button>
+                        <button class="btn" onclick="zoomToAllPositions()">
+                            <i class="fas fa-search-location"></i> Voir positions
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3><i class="fas fa-draw-polygon"></i> OUTILS DESSIN</h3>
+                    <div class="btn-group">
+                        <button class="btn" onclick="startDistanceMeasure()">
+                            <i class="fas fa-ruler"></i> Distance
+                        </button>
+                        <button class="btn" onclick="startAreaMeasure()">
+                            <i class="fas fa-vector-square"></i> Surface
+                        </button>
+                        <button class="btn" onclick="toggleDraw('polygon')">
+                            <i class="fas fa-draw-polygon"></i> Zone
+                        </button>
+                        <button class="btn" onclick="toggleMarkingMode()" id="markingModeBtn">
+                            <i class="fas fa-map-pin"></i> Marquage
+                        </button>
+                        <button class="btn btn-danger" onclick="clearMeasurements()">
+                            <i class="fas fa-trash"></i> Effacer
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Panel pour l'étiquetage et marquage -->
+                <div class="panel" id="markingPanel" style="display: none;">
+                    <h3><i class="fas fa-tag"></i> ÉTIQUETAGE & MARQUAGE</h3>
+                    <input type="text" id="labelText" placeholder="Nom de la position" maxlength="20">
+                    <select id="markerType">
+                        <option value="standard">Marqueur standard</option>
+                        <option value="military">Marqueur militaire</option>
+                        <option value="checkpoint">Point de contrôle</option>
+                        <option value="danger">Zone dangereuse</option>
+                        <option value="resource">Ressource</option>
+                        <option value="base">Base militaire</option>
+                        <option value="observation">Poste d'observation</option>
+                    </select>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="addLabeledMarker()">
+                            <i class="fas fa-tag"></i> Ajouter étiquette
+                        </button>
+                        <button class="btn" onclick="createTwoPointTrajectory()">
+                            <i class="fas fa-route"></i> Traj. 2 points
+                        </button>
+                        <button class="btn" onclick="labelAllPositions()">
+                            <i class="fas fa-tags"></i> Étiqueter tout
+                        </button>
+                        <button class="btn" onclick="clearLabels()">
+                            <i class="fas fa-eraser"></i> Effacer étiquettes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Onglet Outils -->
+            <div id="tools-tab" class="tab-content">
+                <div class="panel">
+                    <h3><i class="fas fa-cog"></i> CONFIGURATION</h3>
+                    <div class="btn-group">
+                        <button class="btn" onclick="toggleFullScreen()">
+                            <i class="fas fa-expand"></i> Plein écran
+                        </button>
+                        <button class="btn" onclick="saveMission()">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                        <button class="btn" onclick="loadMission()">
+                            <i class="fas fa-folder-open"></i> Charger
+                        </button>
+                        <button class="btn" onclick="exportMissionReport()">
+                            <i class="fas fa-file-pdf"></i> Rapport
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3><i class="fas fa-chart-bar"></i> STATISTIQUES</h3>
+                    <div class="statistics">
+                        <div class="stat-item">
+                            <div class="stat-value" id="statsPositions">0</div>
+                            <div class="stat-label">Positions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statsTrajectoryPoints">0</div>
+                            <div class="stat-label">Points traj.</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statsDistance">0 km</div>
+                            <div class="stat-label">Distance</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="statsArea">0 km²</div>
+                            <div class="stat-label">Zone</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="main-content">
+            <!-- Bouton bascule sidebar -->
+            <div class="toggle-sidebar" onclick="toggleSidebar()" title="Afficher/Masquer le panneau">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <!-- Carte -->
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <!-- Affichage coordonnées -->
+                <div class="coordinates-display" id="coordinatesDisplay">
+                    <div>Lat: --.------ | Lng: --.------</div>
+                    <div style="font-size: 0.7rem;">Zoom: --</div>
+                </div>
+                
+                <!-- Contrôles trajectoire -->
+                <div class="trajectory-controls">
+                    <button class="btn btn-warning btn-icon" onclick="toggleTrajectoryMode()" id="trajectoryModeBtnMain" title="Mode trajectoire">
+                        <i class="fas fa-draw-polygon"></i>
+                    </button>
+                    <button class="btn btn-icon" onclick="addPointAtCenter()" id="addPointBtn" title="Ajouter point au centre">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                    <button class="btn btn-icon" onclick="addMilitaryMarker()" title="Ajouter marqueur militaire">
+                        <i class="fas fa-flag"></i>
+                    </button>
+                    <button class="btn btn-success btn-icon" onclick="toggleMarkingMode()" id="markingModeBtnMain" title="Mode étiquetage">
+                        <i class="fas fa-tag"></i>
+                    </button>
+                    <button class="btn btn-icon" onclick="startTrajectorySimulation()" title="Simuler trajectoire">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="btn btn-icon" onclick="undoLastAction()" id="undoBtn" title="Annuler dernière action">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+                
+                <!-- Contrôles carte -->
+                <div class="map-controls">
+                    <div class="map-control-btn" onclick="toggleSidebar()" title="Panneau de contrôle">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="map-control-btn" onclick="toggleFullScreen()" title="Mode plein écran">
+                        <i class="fas fa-expand"></i>
+                    </div>
+                    <div class="map-control-btn" onclick="centerOnTogo()" title="Centrer sur le Togo">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="map-control-btn" onclick="zoomToAllPositions()" title="Voir toutes les positions">
+                        <i class="fas fa-search-location"></i>
+                    </div>
+                </div>
+                
+                <!-- Panneau de simulation -->
+                <div class="simulation-panel" id="simulationPanel">
+                    <div class="simulation-header">SIMULATION TRAJECTOIRE</div>
+                    <div id="simulationInfo">
+                        <div style="margin-bottom: 5px;">
+                            <strong>Mode:</strong> <span id="simTransport">--</span>
+                        </div>
+                        <div style="margin-bottom: 5px;">
+                            <strong>Progression:</strong> <span id="simProgress">0%</span>
+                        </div>
+                        <div style="margin-bottom: 5px;">
+                            <strong>Temps:</strong> <span id="simTime">0:00</span>
+                        </div>
+                    </div>
+                    <input type="range" min="1" max="100" value="50" class="simulation-slider" id="simulationSpeed" onchange="updateSimulationSpeed(this.value)">
+                    <div class="simulation-info">
+                        Vitesse: <span id="speedValue">50%</span>
+                    </div>
+                    <div class="simulation-controls">
+                        <button class="btn btn-success btn-icon" onclick="playSimulation()" id="playBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-icon" onclick="pauseSimulation()" id="pauseBtn" style="display: none;">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button class="btn btn-danger btn-icon" onclick="stopSimulation()">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                        <button class="btn btn-icon" onclick="resetSimulation()">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="instructions-panel" id="instructionsPanel">
+                    <div class="instructions-header">INSTRUCTIONS TACTIQUES</div>
+                    <div id="instructionsContent"></div>
+                </div>
+            </div>
+            
+            <!-- Barre de statut -->
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-light"></div>
+                    <div id="status">Système prêt - En attente d'instructions</div>
+                </div>
+                <div id="lastUpdate">Dernière mise à jour: --:--:--</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        ⚠️ Système militaire FAT - GeoHISTORY Pro MIL V2 | Classification: CONFIDENTIEL | © Commandement FAT 2026
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script>
+        // =================== CONFIGURATION ===================
+        const CONFIG = {
+            speeds: {
+                foot: 5,      // km/h
+                car: 60,      // km/h
+                bike: 40,     // km/h
+                military: 80  // km/h
+            },
+            colors: {
+                foot: '#10B981',
+                car: '#3B82F6',
+                bike: '#F59E0B',
+                military: '#DC2626'
+            },
+            mapLayers: {
+                topo: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                terrain: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
+                streets: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                night: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+            },
+            defaultCenter: [8.6195, 0.8248], // Centre du Togo
+            defaultZoom: 8
+        };
+        
+        // =================== VARIABLES GLOBALES ===================
+        let map, positions = [], activeTrajectory = null;
+        let positionMarkers = [], trajectoryMarkers = [], trajectoryMode = false;
+        let routeLayers = {}, drawnItems = new L.FeatureGroup();
+        let drawControl = null, currentMapType = 'topo';
+        let gridLayer = null, isFullScreen = false;
+        let lastActions = [], directLine = null;
+        let waypointLayer = L.layerGroup();
+        let labeledMarkers = [], twoPointTrajectories = [];
+        let markingMode = false, selectedPoints = [];
+        let labelsVisible = true;
+        let simulationActive = false, simulationInterval = null;
+        let simulationMarker = null, simulationProgress = 0;
+        let simulationSpeed = 50, simulationStartTime = null;
+        let currentSimulationSegment = 0, segmentProgress = 0;
+        
+        // =================== INITIALISATION ===================
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadExampleData();
+            updateStatus('Système initialisé - Prêt pour les opérations');
+        });
+        
+        function initMap() {
+            // Créer la carte
+            map = L.map('map').setView(CONFIG.defaultCenter, CONFIG.defaultZoom);
+            
+            // Ajouter la couche de base
+            L.tileLayer(CONFIG.mapLayers.topo, {
+                attribution: '© OpenTopoMap',
+                maxZoom: 17
+            }).addTo(map);
+            
+            // Initialiser les contrôles de dessin
+            initDrawControls();
+            
+            // Événements de la carte
+            setupMapEvents();
+            
+            // Ajouter les éléments dessinés
+            map.addLayer(drawnItems);
+            map.addLayer(waypointLayer);
+            
+            // Initialiser une trajectoire
+            createNewTrajectory();
+            
+            // Initialiser les statistiques
+            updateStats();
+        }
+        
+        function initDrawControls() {
+            drawnItems = new L.FeatureGroup();
+            
+            drawControl = new L.Control.Draw({
+                position: 'topleft',
+                draw: {
+                    polygon: {
+                        shapeOptions: {
+                            color: '#DC2626',
+                            weight: 2
+                        },
+                        allowIntersection: false
+                    },
+                    polyline: {
+                        shapeOptions: {
+                            color: '#3B82F6',
+                            weight: 3
+                        }
+                    },
+                    circle: false,
+                    rectangle: false,
+                    marker: false,
+                    circlemarker: false
+                },
+                edit: {
+                    featureGroup: drawnItems,
+                    remove: true
+                }
+            });
+            
+            map.addControl(drawControl);
+            
+            map.on(L.Draw.Event.CREATED, function(e) {
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                saveAction('draw', layer);
+                
+                if (layer instanceof L.Polyline) {
+                    const distance = calculateLineDistance(layer.getLatLngs());
+                    layer.bindPopup(`Distance: ${(distance/1000).toFixed(2)} km`);
+                    updateStatus(`Distance mesurée: ${(distance/1000).toFixed(2)} km`);
+                } else if (layer instanceof L.Polygon) {
+                    try {
+                        const latlngs = layer.getLatLngs();
+                        if (latlngs && latlngs[0] && latlngs[0].length > 2) {
+                            const area = calculatePolygonArea(latlngs[0]);
+                            layer.bindPopup(`Surface: ${area.toFixed(2)} km²`);
+                            updateStatus(`Surface mesurée: ${area.toFixed(2)} km²`);
+                        }
+                    } catch (error) {
+                        console.error('Erreur calcul surface:', error);
+                    }
+                }
+            });
+        }
+        
+        function setupMapEvents() {
+            // Coordonnées au survol
+            map.on('mousemove', function(e) {
+                updateCoordinates(e.latlng);
+            });
+            
+            // Click pour ajouter un point en mode trajectoire
+            map.on('click', function(e) {
+                if (trajectoryMode) {
+                    addPointToTrajectory(e.latlng);
+                } else if (markingMode) {
+                    handleMarkingClick(e.latlng);
+                }
+            });
+            
+            // Mise à jour du zoom dans l'affichage
+            map.on('zoomend', function() {
+                updateZoomDisplay();
+            });
+            
+            // Double-click pour ajouter un point rapide
+            map.on('dblclick', function(e) {
+                if (!trajectoryMode && !markingMode) {
+                    const center = map.getCenter();
+                    map.setView([e.latlng.lat, e.latlng.lng], map.getZoom());
+                }
+            });
+        }
+        
+        // =================== GESTION ONGLETS ===================
+        function switchTab(tabId) {
+            // Retirer la classe active de tous les onglets
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Cacher tous les contenus d'onglets
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            const selectedTab = document.querySelector(`.tab[onclick*="${tabId}"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Afficher le contenu correspondant
+            const tabContent = document.getElementById(`${tabId}-tab`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+            
+            // Si on passe à l'onglet Carte, vérifier le panel d'étiquetage
+            if (tabId === 'map') {
+                const markingPanel = document.getElementById('markingPanel');
+                if (markingPanel) {
+                    markingPanel.style.display = markingMode ? 'block' : 'none';
+                }
+            }
+        }
+        
+        // =================== GESTION POSITIONS ===================
+        function parseTextData() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Veuillez coller des données GPS');
+                return;
+            }
+            
+            const newPositions = [];
+            const lines = text.split('\n');
+            let currentPos = {};
+            
+            console.log('Analyse des données GPS...');
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Recherche de "Coordonnées GPS:" comme marqueur de début
+                if (line.includes('Coordonnées GPS:') || line.includes('Coordonnées GPS')) {
+                    // Si on a déjà une position en cours, la sauvegarder
+                    if (currentPos.lat !== undefined && currentPos.lng !== undefined) {
+                        currentPos.id = Date.now() + Math.random();
+                        currentPos.name = `POS_${positions.length + newPositions.length + 1}`;
+                        if (!currentPos.date) {
+                            currentPos.date = new Date().toLocaleDateString('fr-FR');
+                        }
+                        if (!currentPos.time) {
+                            currentPos.time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        }
+                        newPositions.push({...currentPos});
+                        currentPos = {};
+                    }
+                    continue;
+                }
+                
+                // Recherche de Latitude
+                if (line.includes('Latitude:')) {
+                    const latMatch = line.match(/Latitude:\s*([\d\.\-]+)/i);
+                    if (latMatch) {
+                        currentPos.lat = parseFloat(latMatch[1]);
+                    }
+                }
+                
+                // Recherche de Longitude
+                if (line.includes('Longitude:')) {
+                    const lngMatch = line.match(/Longitude:\s*([\d\.\-]+)/i);
+                    if (lngMatch) {
+                        currentPos.lng = parseFloat(lngMatch[1]);
+                    }
+                }
+                
+                // Recherche de Date
+                if (line.includes('Date:')) {
+                    currentPos.date = line.replace(/Date:/i, '').trim();
+                }
+                
+                // Recherche de Heure
+                if (line.includes('Heure:')) {
+                    currentPos.time = line.replace(/Heure:/i, '').trim();
+                }
+                
+                // Recherche de Précision
+                if (line.includes('Précision:')) {
+                    currentPos.precision = line.replace(/Précision:/i, '').trim();
+                }
+                
+                // Recherche de Vitesse
+                if (line.includes('Vitesse:')) {
+                    currentPos.speed = line.replace(/Vitesse:/i, '').trim();
+                }
+            }
+            
+            // Sauvegarder la dernière position si elle existe
+            if (currentPos.lat !== undefined && currentPos.lng !== undefined) {
+                currentPos.id = Date.now() + Math.random();
+                currentPos.name = `POS_${positions.length + newPositions.length + 1}`;
+                if (!currentPos.date) {
+                    currentPos.date = new Date().toLocaleDateString('fr-FR');
+                }
+                if (!currentPos.time) {
+                    currentPos.time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                }
+                newPositions.push({...currentPos});
+            }
+            
+            console.log('Positions trouvées:', newPositions.length);
+            
+            if (newPositions.length > 0) {
+                positions.push(...newPositions);
+                updatePositionList();
+                updateMarkers();
+                updateStats();
+                updateStatus(`${newPositions.length} positions extraites et affichées`);
+                
+                // Zoom sur toutes les positions
+                setTimeout(() => {
+                    zoomToAllPositions();
+                }, 100);
+                
+                // Étiqueter automatiquement
+                labelAllPositions();
+                
+                // Afficher un message détaillé
+                let message = `${newPositions.length} position(s) extraite(s) et affichée(s) sur la carte:\n`;
+                newPositions.forEach((pos, index) => {
+                    message += `${index + 1}. ${pos.name}: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}\n`;
+                });
+                alert(message);
+            } else {
+                alert('Aucune position valide trouvée.\n\nFormat attendu:\nCoordonnées GPS:\nLatitude: X.XXXXXX\nLongitude: X.XXXXXX\nPrécision: ±Xm\nVitesse: X.X km/h');
+            }
+        }
+        
+        function zoomToAllPositions() {
+            if (positions.length === 0) {
+                updateStatus('Aucune position à afficher');
+                return;
+            }
+            
+            if (positions.length === 1) {
+                const pos = positions[0];
+                map.setView([pos.lat, pos.lng], 15);
+                updateStatus(`Zoom sur la position: ${pos.name}`);
+                return;
+            }
+            
+            // Calculer les limites pour toutes les positions
+            const bounds = L.latLngBounds(
+                positions.map(p => [p.lat, p.lng])
+            );
+            
+            // Ajuster les limites avec une marge
+            const paddedBounds = bounds.pad(0.1);
+            
+            // Ajuster la vue de la carte
+            map.fitBounds(paddedBounds);
+            
+            updateStatus(`Zoom sur ${positions.length} positions`);
+        }
+        
+        function updatePositionList() {
+            const list = document.getElementById('positionList');
+            const count = document.getElementById('positionCount');
+            
+            if (!list || !count) return;
+            
+            list.innerHTML = '';
+            count.textContent = `${positions.length} positions enregistrées`;
+            
+            positions.forEach((pos, index) => {
+                const div = document.createElement('div');
+                div.className = 'position-item';
+                div.onclick = () => selectPosition(index);
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: bold; color: var(--fat-gold);">${pos.name}</div>
+                        <button onclick="event.stopPropagation(); removePosition(${index})" 
+                                style="padding: 2px 8px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">
+                            ×
+                        </button>
+                    </div>
+                    <div style="font-size: 0.75rem;">${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}</div>
+                    ${pos.date ? `<div style="font-size: 0.7rem; color: #94A3B8;">${pos.date} ${pos.time || ''}</div>` : ''}
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function updateMarkers() {
+            // Supprimer anciens marqueurs de position
+            positionMarkers.forEach(marker => {
+                if (marker && map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+            });
+            
+            positionMarkers = [];
+            
+            // Ajouter nouveaux marqueurs
+            positions.forEach((pos, index) => {
+                const marker = L.marker([pos.lat, pos.lng], {
+                    icon: L.divIcon({
+                        className: 'pulse-marker',
+                        html: `
+                            <div style="
+                                background: #1E3A8A;
+                                width: 24px;
+                                height: 24px;
+                                border-radius: 50%;
+                                border: 2px solid var(--fat-gold);
+                                box-shadow: 0 0 10px rgba(0,0,0,0.8);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-size: 11px;
+                                font-weight: bold;
+                                cursor: pointer;
+                            ">${index + 1}</div>
+                        `,
+                        iconSize: [24, 24]
+                    })
+                })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="font-family: 'Segoe UI', sans-serif; max-width: 250px;">
+                        <strong style="color: var(--fat-gold);">${pos.name}</strong><br>
+                        <strong>Coordonnées GPS:</strong><br>
+                        Latitude: ${pos.lat.toFixed(6)}<br>
+                        Longitude: ${pos.lng.toFixed(6)}<br>
+                        ${pos.precision ? `<strong>Précision:</strong> ${pos.precision}<br>` : ''}
+                        ${pos.speed ? `<strong>Vitesse:</strong> ${pos.speed}<br>` : ''}
+                        ${pos.date ? `<strong>Date:</strong> ${pos.date}<br>` : ''}
+                        ${pos.time ? `<strong>Heure:</strong> ${pos.time}` : ''}
+                        <hr style="margin: 5px 0; border-color: #4a5568;">
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="event.stopPropagation(); removePosition(${index})" 
+                                    style="padding: 3px 10px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1;">
+                                Supprimer
+                            </button>
+                            <button onclick="event.stopPropagation(); editPositionLabel(${index})" 
+                                    style="padding: 3px 10px; background: #3B82F6; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1;">
+                                Renommer
+                            </button>
+                        </div>
+                    </div>
+                `);
+                
+                // Ajouter une étiquette permanente
+                if (labelsVisible) {
+                    marker.bindTooltip(pos.name, {
+                        permanent: true,
+                        direction: 'top',
+                        className: 'leaflet-label',
+                        offset: [0, -15]
+                    });
+                }
+                
+                positionMarkers.push(marker);
+            });
+        }
+        
+        function editPositionLabel(index) {
+            const pos = positions[index];
+            const newName = prompt(`Renommer la position ${pos.name}:`, pos.name);
+            
+            if (newName && newName.trim() !== '') {
+                pos.name = newName.trim();
+                updatePositionList();
+                
+                // Mettre à jour le marqueur
+                if (positionMarkers[index]) {
+                    // Mettre à jour le popup
+                    positionMarkers[index].setPopupContent(`
+                        <div style="font-family: 'Segoe UI', sans-serif; max-width: 250px;">
+                            <strong style="color: var(--fat-gold);">${pos.name}</strong><br>
+                            <strong>Coordonnées GPS:</strong><br>
+                            Latitude: ${pos.lat.toFixed(6)}<br>
+                            Longitude: ${pos.lng.toFixed(6)}<br>
+                            ${pos.precision ? `<strong>Précision:</strong> ${pos.precision}<br>` : ''}
+                            ${pos.speed ? `<strong>Vitesse:</strong> ${pos.speed}<br>` : ''}
+                            ${pos.date ? `<strong>Date:</strong> ${pos.date}<br>` : ''}
+                            ${pos.time ? `<strong>Heure:</strong> ${pos.time}` : ''}
+                            <hr style="margin: 5px 0; border-color: #4a5568;">
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="event.stopPropagation(); removePosition(${index})" 
+                                        style="padding: 3px 10px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1;">
+                                    Supprimer
+                                </button>
+                                <button onclick="event.stopPropagation(); editPositionLabel(${index})" 
+                                        style="padding: 3px 10px; background: #3B82F6; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; flex: 1;">
+                                    Renommer
+                                </button>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Mettre à jour l'étiquette
+                    positionMarkers[index].unbindTooltip();
+                    if (labelsVisible) {
+                        positionMarkers[index].bindTooltip(pos.name, {
+                            permanent: true,
+                            direction: 'top',
+                            className: 'leaflet-label',
+                            offset: [0, -15]
+                        });
+                    }
+                }
+                
+                updateStatus(`Position renommée: ${pos.name}`);
+            }
+        }
+        
+        function labelAllPositions() {
+            positions.forEach((pos, index) => {
+                if (positionMarkers[index]) {
+                    positionMarkers[index].unbindTooltip();
+                    if (labelsVisible) {
+                        positionMarkers[index].bindTooltip(pos.name, {
+                            permanent: true,
+                            direction: 'top',
+                            className: 'leaflet-label',
+                            offset: [0, -15]
+                        });
+                    }
+                }
+            });
+            updateStatus('Toutes les positions ont été étiquetées');
+        }
+        
+        function toggleLabelDisplay() {
+            labelsVisible = !labelsVisible;
+            const btn = document.getElementById('labelDisplayBtn');
+            
+            if (labelsVisible) {
+                if (btn) btn.classList.add('active');
+                labelAllPositions();
+                // Étiqueter aussi les marqueurs de trajectoire
+                trajectoryMarkers.forEach((marker, index) => {
+                    if (marker && activeTrajectory && activeTrajectory.points[index]) {
+                        marker.unbindTooltip();
+                        marker.bindTooltip(activeTrajectory.points[index].name, {
+                            permanent: true,
+                            direction: 'top',
+                            className: 'leaflet-label',
+                            offset: [0, -15]
+                        });
+                    }
+                });
+                updateStatus('Affichage des étiquettes activé');
+            } else {
+                if (btn) btn.classList.remove('active');
+                positionMarkers.forEach(marker => {
+                    if (marker) marker.unbindTooltip();
+                });
+                trajectoryMarkers.forEach(marker => {
+                    if (marker) marker.unbindTooltip();
+                });
+                updateStatus('Affichage des étiquettes désactivé');
+            }
+        }
+        
+        function selectPosition(index) {
+            if (positions[index]) {
+                const pos = positions[index];
+                map.setView([pos.lat, pos.lng], 15);
+                if (positionMarkers[index]) {
+                    positionMarkers[index].openPopup();
+                }
+                updateStatus(`Position sélectionnée: ${pos.name}`);
+            }
+        }
+        
+        function removePosition(index) {
+            if (confirm(`Supprimer la position ${positions[index]?.name || index + 1} ?`)) {
+                if (positionMarkers[index] && map.hasLayer(positionMarkers[index])) {
+                    map.removeLayer(positionMarkers[index]);
+                }
+                positions.splice(index, 1);
+                positionMarkers.splice(index, 1);
+                
+                // Renuméroter les marqueurs restants
+                positionMarkers.forEach((marker, i) => {
+                    if (marker) {
+                        marker.setIcon(L.divIcon({
+                            className: 'pulse-marker',
+                            html: `<div style="background:#1E3A8A;width:24px;height:24px;border-radius:50%;border:2px solid var(--fat-gold);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:bold;">${i + 1}</div>`,
+                            iconSize: [24, 24]
+                        }));
+                    }
+                });
+                
+                updatePositionList();
+                updateStats();
+                updateStatus('Position supprimée');
+            }
+        }
+        
+        function addNewPosition() {
+            const center = map.getCenter();
+            const name = prompt('Nom de la position:', `POS_${positions.length + 1}`);
+            
+            if (!name) return;
+            
+            const newPos = {
+                id: Date.now(),
+                name: name.trim(),
+                lat: center.lat,
+                lng: center.lng,
+                date: new Date().toLocaleDateString('fr-FR'),
+                time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            positions.push(newPos);
+            updatePositionList();
+            updateMarkers();
+            updateStats();
+            saveAction('add_position', newPos);
+            
+            // Afficher automatiquement la nouvelle position
+            map.setView([newPos.lat, newPos.lng], 15);
+            if (positionMarkers[positionMarkers.length - 1]) {
+                positionMarkers[positionMarkers.length - 1].openPopup();
+            }
+            
+            updateStatus('Nouvelle position ajoutée et affichée');
+        }
+        
+        function clearAllPositions() {
+            if (positions.length === 0) {
+                alert('Aucune position à supprimer');
+                return;
+            }
+            
+            if (confirm(`Supprimer toutes les positions (${positions.length}) ?`)) {
+                positionMarkers.forEach(marker => {
+                    if (marker && map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                });
+                
+                positions = [];
+                positionMarkers = [];
+                updatePositionList();
+                updateStats();
+                saveAction('clear_positions');
+                
+                // Recentrer sur le Togo après suppression
+                centerOnTogo();
+                updateStatus('Toutes les positions ont été supprimées');
+            }
+        }
+        
+        // =================== ÉTIQUETAGE ET MARQUAGE ===================
+        function toggleMarkingMode() {
+            markingMode = !markingMode;
+            const btn = document.getElementById('markingModeBtn');
+            const btnMain = document.getElementById('markingModeBtnMain');
+            const panel = document.getElementById('markingPanel');
+            
+            if (markingMode) {
+                if (btn) btn.classList.add('active');
+                if (btnMain) btnMain.classList.add('active');
+                if (panel) panel.style.display = 'block';
+                trajectoryMode = false; // Désactiver le mode trajectoire
+                if (document.getElementById('trajectoryModeBtn')) {
+                    document.getElementById('trajectoryModeBtn').classList.remove('active');
+                }
+                if (document.getElementById('trajectoryModeBtnMain')) {
+                    document.getElementById('trajectoryModeBtnMain').classList.remove('active');
+                }
+                updateStatus('Mode étiquetage activé - Cliquez sur la carte pour ajouter des étiquettes');
+            } else {
+                if (btn) btn.classList.remove('active');
+                if (btnMain) btnMain.classList.remove('active');
+                if (panel) panel.style.display = 'none';
+                selectedPoints = [];
+                updateStatus('Mode étiquetage désactivé');
+            }
+        }
+        
+        function handleMarkingClick(latlng) {
+            if (!markingMode) return;
+            
+            // Demander le nom de la position
+            const label = prompt('Nom de la position:', `Position_${labeledMarkers.length + 1}`);
+            if (!label) return;
+            
+            addCustomLabeledMarker(latlng, label, 'standard');
+        }
+        
+        function addLabeledMarker() {
+            const labelText = document.getElementById('labelText').value.trim();
+            const markerType = document.getElementById('markerType').value;
+            
+            if (!labelText) {
+                alert('Veuillez entrer un nom pour la position');
+                return;
+            }
+            
+            const center = map.getCenter();
+            addCustomLabeledMarker(center, labelText, markerType);
+            
+            // Effacer le champ de texte après ajout
+            document.getElementById('labelText').value = '';
+        }
+        
+        function addCustomLabeledMarker(latlng, labelText, markerType = 'standard') {
+            // Déterminer la couleur et l'icône selon le type
+            let color, iconHtml;
+            switch(markerType) {
+                case 'military':
+                    color = '#DC2626';
+                    iconHtml = '⚔️';
+                    break;
+                case 'checkpoint':
+                    color = '#10B981';
+                    iconHtml = '✓';
+                    break;
+                case 'danger':
+                    color = '#F59E0B';
+                    iconHtml = '⚠️';
+                    break;
+                case 'resource':
+                    color = '#3B82F6';
+                    iconHtml = '📦';
+                    break;
+                case 'base':
+                    color = '#8B0000';
+                    iconHtml = '🏰';
+                    break;
+                case 'observation':
+                    color = '#9333EA';
+                    iconHtml = '👁️';
+                    break;
+                default:
+                    color = '#1E3A8A';
+                    iconHtml = '📍';
+            }
+            
+            // Créer le marqueur
+            const marker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'pulse-marker',
+                    html: `
+                        <div style="
+                            background: ${color};
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            box-shadow: 0 0 15px rgba(0,0,0,0.9);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                        ">${iconHtml}</div>
+                    `,
+                    iconSize: [30, 30]
+                })
+            }).addTo(map);
+            
+            // Ajouter une étiquette permanente
+            marker.bindTooltip(labelText, {
+                permanent: labelsVisible,
+                direction: 'top',
+                className: 'leaflet-label',
+                offset: [0, -20]
+            });
+            
+            // Ajouter un popup avec détails
+            marker.bindPopup(`
+                <div style="font-family: 'Segoe UI', sans-serif; max-width: 220px;">
+                    <strong style="color: var(--fat-gold);">${labelText}</strong><br>
+                    <strong>Type:</strong> ${getMarkerTypeName(markerType)}<br>
+                    <strong>Coordonnées:</strong><br>
+                    ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}<br>
+                    <strong>Ajouté:</strong> ${new Date().toLocaleTimeString('fr-FR')}
+                    <hr style="margin: 5px 0; border-color: #4a5568;">
+                    <button onclick="event.stopPropagation(); removeLabeledMarkerByIndex(${labeledMarkers.length})" 
+                            style="padding: 3px 10px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; width: 100%;">
+                        Supprimer
+                    </button>
+                </div>
+            `);
+            
+            // Stocker le marqueur
+            labeledMarkers.push({
+                marker: marker,
+                type: markerType,
+                label: labelText,
+                latlng: latlng
+            });
+            
+            // Ajouter aussi aux positions standard
+            const newPos = {
+                id: Date.now(),
+                name: labelText,
+                lat: latlng.lat,
+                lng: latlng.lng,
+                date: new Date().toLocaleDateString('fr-FR'),
+                time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                type: markerType
+            };
+            
+            positions.push(newPos);
+            updatePositionList();
+            updateMarkers();
+            updateStats();
+            
+            saveAction('add_labeled_marker', { label: labelText, type: markerType });
+            updateStatus(`Étiquette "${labelText}" ajoutée`);
+        }
+        
+        function removeLabeledMarkerByIndex(index) {
+            if (index >= 0 && index < labeledMarkers.length) {
+                const item = labeledMarkers[index];
+                if (item.marker && map.hasLayer(item.marker)) {
+                    map.removeLayer(item.marker);
+                }
+                
+                // Retirer aussi de la liste des positions
+                const posIndex = positions.findIndex(p => 
+                    p.lat === item.latlng.lat && 
+                    p.lng === item.latlng.lng && 
+                    p.name === item.label
+                );
+                if (posIndex !== -1) {
+                    positions.splice(posIndex, 1);
+                    if (positionMarkers[posIndex] && map.hasLayer(positionMarkers[posIndex])) {
+                        map.removeLayer(positionMarkers[posIndex]);
+                    }
+                    positionMarkers.splice(posIndex, 1);
+                }
+                
+                labeledMarkers.splice(index, 1);
+                updatePositionList();
+                updateMarkers();
+                updateStats();
+                updateStatus('Étiquette supprimée');
+            }
+        }
+        
+        function getMarkerTypeName(type) {
+            const names = {
+                'standard': 'Standard',
+                'military': 'Militaire',
+                'checkpoint': 'Point de contrôle',
+                'danger': 'Zone dangereuse',
+                'resource': 'Ressource',
+                'base': 'Base militaire',
+                'observation': 'Poste d\'observation'
+            };
+            return names[type] || type;
+        }
+        
+        function clearLabels() {
+            if (labeledMarkers.length === 0) {
+                alert('Aucune étiquette à supprimer');
+                return;
+            }
+            
+            if (confirm(`Supprimer toutes les étiquettes (${labeledMarkers.length}) ?`)) {
+                labeledMarkers.forEach(item => {
+                    if (item.marker && map.hasLayer(item.marker)) {
+                        map.removeLayer(item.marker);
+                    }
+                });
+                labeledMarkers = [];
+                updateStatus('Toutes les étiquettes ont été supprimées');
+            }
+        }
+        
+        // =================== TRAJECTOIRES ENTRE DEUX POINTS ===================
+        function createTwoPointTrajectory() {
+            if (positions.length < 2) {
+                alert('Ajoutez au moins deux positions avant de créer une trajectoire');
+                return;
+            }
+            
+            // Utiliser les deux premières positions
+            const p1 = positions[0];
+            const p2 = positions[1];
+            const point1 = L.latLng(p1.lat, p1.lng);
+            const point2 = L.latLng(p2.lat, p2.lng);
+            
+            // Créer la ligne de trajectoire
+            const trajectory = L.polyline([point1, point2], {
+                color: '#FFD700',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '10, 10'
+            }).addTo(map);
+            
+            // Calculer la distance
+            const distance = point1.distanceTo(point2) / 1000; // en km
+            
+            // Calculer les durées pour différents modes de transport
+            const durations = {};
+            Object.keys(CONFIG.speeds).forEach(transport => {
+                const hours = distance / CONFIG.speeds[transport];
+                const minutes = Math.round(hours * 60);
+                durations[transport] = minutes;
+            });
+            
+            // Ajouter un popup avec les informations
+            trajectory.bindPopup(`
+                <div style="font-family: 'Segoe UI', sans-serif; max-width: 250px;">
+                    <strong style="color: var(--fat-gold);">TRAJECTOIRE DIRECTE</strong><br>
+                    <strong>Distance:</strong> ${distance.toFixed(2)} km<br>
+                    <hr style="margin: 5px 0; border-color: #4a5568;">
+                    <strong>Durées estimées:</strong><br>
+                    • Infanterie: ${Math.round(durations.foot)} min<br>
+                    • Véhicule: ${Math.round(durations.car)} min<br>
+                    • Moto/Vélo: ${Math.round(durations.bike)} min<br>
+                    • Militaire: ${Math.round(durations.military)} min<br>
+                </div>
+            `);
+            
+            // Ajouter des marqueurs aux extrémités
+            const startMarker = L.marker(point1, {
+                icon: L.divIcon({
+                    className: 'pulse-marker',
+                    html: '<div style="background:#10B981;width:22px;height:22px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">D</div>',
+                    iconSize: [22, 22]
+                })
+            }).addTo(map).bindTooltip('Départ', { permanent: false });
+            
+            const endMarker = L.marker(point2, {
+                icon: L.divIcon({
+                    className: 'pulse-marker',
+                    html: '<div style="background:#DC2626;width:22px;height:22px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">A</div>',
+                    iconSize: [22, 22]
+                })
+            }).addTo(map).bindTooltip('Arrivée', { permanent: false });
+            
+            // Stocker la trajectoire
+            twoPointTrajectories.push({
+                trajectory: trajectory,
+                startMarker: startMarker,
+                endMarker: endMarker,
+                distance: distance,
+                points: [point1, point2]
+            });
+            
+            saveAction('add_two_point_trajectory', { 
+                point1: { lat: point1.lat, lng: point1.lng },
+                point2: { lat: point2.lat, lng: point2.lng },
+                distance: distance 
+            });
+            
+            updateStatus(`Trajectoire entre deux points créée (${distance.toFixed(2)} km)`);
+        }
+        
+        function clearTwoPointTrajectories() {
+            if (twoPointTrajectories.length === 0) {
+                alert('Aucune trajectoire à deux points à supprimer');
+                return;
+            }
+            
+            if (confirm(`Supprimer toutes les trajectoires à deux points (${twoPointTrajectories.length}) ?`)) {
+                twoPointTrajectories.forEach(item => {
+                    if (item.trajectory && map.hasLayer(item.trajectory)) {
+                        map.removeLayer(item.trajectory);
+                    }
+                    if (item.startMarker && map.hasLayer(item.startMarker)) {
+                        map.removeLayer(item.startMarker);
+                    }
+                    if (item.endMarker && map.hasLayer(item.endMarker)) {
+                        map.removeLayer(item.endMarker);
+                    }
+                });
+                twoPointTrajectories = [];
+                updateStatus('Toutes les trajectoires à deux points ont été supprimées');
+            }
+        }
+        
+        // =================== SIMULATION DE TRAJECTOIRE ===================
+        function startTrajectorySimulation() {
+            if (!activeTrajectory || activeTrajectory.points.length < 2) {
+                alert('Ajoutez au moins 2 points pour simuler une trajectoire');
+                return;
+            }
+            
+            stopSimulation(); // Arrêter toute simulation en cours
+            
+            // Afficher le panneau de simulation
+            const panel = document.getElementById('simulationPanel');
+            if (panel) {
+                panel.style.display = 'block';
+            }
+            
+            // Créer le marqueur de simulation
+            const startPoint = activeTrajectory.points[0];
+            simulationMarker = L.marker([startPoint.lat, startPoint.lng], {
+                icon: L.divIcon({
+                    className: 'pulse-marker',
+                    html: `
+                        <div style="
+                            background: #FFD700;
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            border: 3px solid #DC2626;
+                            box-shadow: 0 0 20px rgba(255,215,0,0.8);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #000;
+                            font-size: 18px;
+                            font-weight: bold;
+                            cursor: pointer;
+                        ">⚡</div>
+                    `,
+                    iconSize: [32, 32]
+                })
+            }).addTo(map);
+            
+            simulationMarker.bindTooltip('Simulation en cours', { permanent: false });
+            
+            // Initialiser la simulation
+            simulationActive = true;
+            simulationProgress = 0;
+            simulationStartTime = Date.now();
+            currentSimulationSegment = 0;
+            segmentProgress = 0;
+            
+            // Mettre à jour les informations de simulation
+            updateSimulationInfo();
+            
+            // Démarrer la simulation
+            playSimulation();
+            
+            updateStatus('Simulation de trajectoire démarrée');
+        }
+        
+        function playSimulation() {
+            if (!simulationActive || !simulationMarker) return;
+            
+            clearInterval(simulationInterval);
+            
+            const totalDistance = calculateDirectDistance();
+            const totalPoints = activeTrajectory.points.length;
+            const intervalTime = 2000 / (simulationSpeed / 10); // Ajuster selon la vitesse
+            
+            simulationInterval = setInterval(() => {
+                if (!simulationActive) return;
+                
+                // Calculer la progression
+                simulationProgress += 2;
+                if (simulationProgress > 100) {
+                    simulationProgress = 0;
+                    currentSimulationSegment = 0;
+                    segmentProgress = 0;
+                }
+                
+                // Calculer le segment actuel
+                const progressPerSegment = 100 / (totalPoints - 1);
+                currentSimulationSegment = Math.floor(simulationProgress / progressPerSegment);
+                segmentProgress = (simulationProgress % progressPerSegment) / progressPerSegment;
+                
+                if (currentSimulationSegment < totalPoints - 1) {
+                    const p1 = activeTrajectory.points[currentSimulationSegment];
+                    const p2 = activeTrajectory.points[currentSimulationSegment + 1];
+                    
+                    // Interpoler la position
+                    const lat = p1.lat + (p2.lat - p1.lat) * segmentProgress;
+                    const lng = p1.lng + (p2.lng - p1.lng) * segmentProgress;
+                    
+                    // Mettre à jour la position du marqueur
+                    simulationMarker.setLatLng([lat, lng]);
+                    
+                    // Mettre à jour les informations
+                    updateSimulationInfo();
+                    
+                    // Centrer doucement la carte sur le marqueur
+                    map.panTo([lat, lng], {animate: true, duration: 0.5});
+                }
+                
+            }, intervalTime);
+            
+            document.getElementById('playBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'block';
+        }
+        
+        function pauseSimulation() {
+            clearInterval(simulationInterval);
+            document.getElementById('playBtn').style.display = 'block';
+            document.getElementById('pauseBtn').style.display = 'none';
+            updateStatus('Simulation mise en pause');
+        }
+        
+        function stopSimulation() {
+            simulationActive = false;
+            clearInterval(simulationInterval);
+            
+            if (simulationMarker && map.hasLayer(simulationMarker)) {
+                map.removeLayer(simulationMarker);
+                simulationMarker = null;
+            }
+            
+            const panel = document.getElementById('simulationPanel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+            
+            document.getElementById('playBtn').style.display = 'block';
+            document.getElementById('pauseBtn').style.display = 'none';
+            
+            updateStatus('Simulation arrêtée');
+        }
+        
+        function resetSimulation() {
+            stopSimulation();
+            startTrajectorySimulation();
+        }
+        
+        function updateSimulationSpeed(value) {
+            simulationSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value + '%';
+            
+            if (simulationActive) {
+                playSimulation(); // Redémarrer avec la nouvelle vitesse
+            }
+        }
+        
+        function updateSimulationInfo() {
+            const progressElement = document.getElementById('simProgress');
+            const timeElement = document.getElementById('simTime');
+            const transportElement = document.getElementById('simTransport');
+            
+            if (progressElement && timeElement && transportElement) {
+                const elapsedSeconds = Math.floor((Date.now() - simulationStartTime) / 1000);
+                const minutes = Math.floor(elapsedSeconds / 60);
+                const seconds = elapsedSeconds % 60;
+                
+                progressElement.textContent = Math.round(simulationProgress) + '%';
+                timeElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                transportElement.textContent = 'Militaire';
+            }
+        }
+        
+        // =================== GESTION TRAJECTOIRES ===================
+        function toggleTrajectoryMode() {
+            trajectoryMode = !trajectoryMode;
+            markingMode = false; // Désactiver le mode étiquetage si actif
+            
+            const btn = document.getElementById('trajectoryModeBtn');
+            const btnMain = document.getElementById('trajectoryModeBtnMain');
+            const markingBtn = document.getElementById('markingModeBtn');
+            const markingBtnMain = document.getElementById('markingModeBtnMain');
+            const markingPanel = document.getElementById('markingPanel');
+            
+            if (trajectoryMode) {
+                if (btn) btn.classList.add('active');
+                if (btnMain) btnMain.classList.add('active');
+                if (markingBtn) markingBtn.classList.remove('active');
+                if (markingBtnMain) markingBtnMain.classList.remove('active');
+                if (markingPanel) markingPanel.style.display = 'none';
+                updateStatus('Mode trajectoire activé - Cliquez sur la carte pour ajouter des points');
+            } else {
+                if (btn) btn.classList.remove('active');
+                if (btnMain) btnMain.classList.remove('active');
+                updateStatus('Mode trajectoire désactivé');
+            }
+        }
+        
+        function createNewTrajectory() {
+            const nameInput = document.getElementById('trajectoryName');
+            const name = nameInput ? nameInput.value : `Mission_${new Date().getTime()}`;
+            
+            // Nettoyer ancienne trajectoire
+            clearTrajectoryMarkers();
+            clearRoute();
+            
+            activeTrajectory = {
+                id: Date.now(),
+                name: name,
+                points: [],
+                color: '#DC2626'
+            };
+            
+            trajectoryMarkers = [];
+            updateTrajectoryDisplay();
+            updateTransportStats();
+            
+            saveAction('new_trajectory', { name: name });
+            updateStatus(`Nouvelle trajectoire: ${name}`);
+        }
+        
+        function addPointAtCenter() {
+            const center = map.getCenter();
+            const pointName = prompt('Nom du point de passage:', `WP${activeTrajectory ? activeTrajectory.points.length + 1 : 1}`);
+            if (!pointName) return;
+            
+            addPointToTrajectory(center, pointName.trim());
+        }
+        
+        function addPointToTrajectory(latlng, customName = null) {
+            if (!activeTrajectory) {
+                createNewTrajectory();
+            }
+            
+            const point = {
+                id: Date.now(),
+                lat: latlng.lat,
+                lng: latlng.lng,
+                name: customName || `WP${activeTrajectory.points.length + 1}`
+            };
+            
+            activeTrajectory.points.push(point);
+            
+            // Ajouter marqueur avec étiquette
+            const marker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'waypoint-marker pulse-marker',
+                    html: `
+                        <div style="
+                            background: ${activeTrajectory.color};
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 12px;
+                        ">${activeTrajectory.points.length}</div>
+                    `,
+                    iconSize: [24, 24]
+                })
+            })
+            .addTo(map)
+            .bindPopup(`
+                <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
+                    <strong style="color: var(--fat-gold);">${point.name}</strong><br>
+                    <strong>Coordonnées:</strong><br>
+                    Lat: ${latlng.lat.toFixed(6)}<br>
+                    Lng: ${latlng.lng.toFixed(6)}<br>
+                    <hr style="margin: 5px 0; border-color: #4a5568;">
+                    <button onclick="event.stopPropagation(); removeWaypoint(${activeTrajectory.points.length - 1})" 
+                            style="padding: 3px 10px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; width: 100%;">
+                        Supprimer
+                    </button>
+                </div>
+            `);
+            
+            // Ajouter étiquette
+            if (labelsVisible) {
+                marker.bindTooltip(point.name, {
+                    permanent: true,
+                    direction: 'top',
+                    className: 'leaflet-label',
+                    offset: [0, -15]
+                });
+            }
+            
+            trajectoryMarkers.push(marker);
+            
+            updateTrajectoryDisplay();
+            drawDirectLine();
+            updateStats();
+            
+            saveAction('add_waypoint', point);
+            updateStatus(`Point ajouté: ${point.name}`);
+        }
+        
+        function removeWaypoint(index) {
+            if (!activeTrajectory || index >= activeTrajectory.points.length) return;
+            
+            // Supprimer le marqueur
+            if (trajectoryMarkers[index] && map.hasLayer(trajectoryMarkers[index])) {
+                map.removeLayer(trajectoryMarkers[index]);
+            }
+            trajectoryMarkers.splice(index, 1);
+            
+            // Supprimer le point
+            activeTrajectory.points.splice(index, 1);
+            
+            // Renuméroter les marqueurs restants
+            trajectoryMarkers.forEach((marker, i) => {
+                if (marker) {
+                    marker.setIcon(L.divIcon({
+                        className: 'waypoint-marker pulse-marker',
+                        html: `<div style="background:${activeTrajectory.color};width:24px;height:24px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">${i + 1}</div>`,
+                        iconSize: [24, 24]
+                    }));
+                    
+                    // Mettre à jour le nom dans le popup
+                    if (activeTrajectory.points[i]) {
+                        marker.setPopupContent(`
+                            <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
+                                <strong style="color: var(--fat-gold);">${activeTrajectory.points[i].name}</strong><br>
+                                <strong>Coordonnées:</strong><br>
+                                Lat: ${activeTrajectory.points[i].lat.toFixed(6)}<br>
+                                Lng: ${activeTrajectory.points[i].lng.toFixed(6)}<br>
+                                <hr style="margin: 5px 0; border-color: #4a5568;">
+                                <button onclick="event.stopPropagation(); removeWaypoint(${i})" 
+                                        style="padding: 3px 10px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; width: 100%;">
+                                    Supprimer
+                                </button>
+                            </div>
+                        `);
+                        
+                        // Mettre à jour l'étiquette
+                        marker.unbindTooltip();
+                        if (labelsVisible) {
+                            marker.bindTooltip(activeTrajectory.points[i].name, {
+                                permanent: true,
+                                direction: 'top',
+                                className: 'leaflet-label',
+                                offset: [0, -15]
+                            });
+                        }
+                    }
+                }
+            });
+            
+            updateTrajectoryDisplay();
+            drawDirectLine();
+            clearRoute();
+            updateStats();
+            
+            saveAction('remove_waypoint', { index: index });
+            updateStatus('Point supprimé');
+        }
+        
+        function updateTrajectoryDisplay() {
+            if (!activeTrajectory) return;
+            
+            const pointsList = document.getElementById('trajectoryPointsList');
+            if (!pointsList) return;
+            
+            pointsList.innerHTML = '';
+            
+            activeTrajectory.points.forEach((point, index) => {
+                const div = document.createElement('div');
+                div.className = 'position-item';
+                div.onclick = () => {
+                    map.setView([point.lat, point.lng], 15);
+                    if (trajectoryMarkers[index]) {
+                        trajectoryMarkers[index].openPopup();
+                    }
+                };
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: bold; color: var(--fat-gold);">${point.name}</div>
+                        <button onclick="event.stopPropagation(); removeWaypoint(${index})" 
+                                style="padding: 2px 8px; background: #DC2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">
+                            ×
+                        </button>
+                    </div>
+                    <div style="font-size: 0.75rem;">${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}</div>
+                `;
+                pointsList.appendChild(div);
+            });
+        }
+        
+        function drawDirectLine() {
+            // Supprimer ancienne ligne
+            if (directLine && map.hasLayer(directLine)) {
+                map.removeLayer(directLine);
+            }
+            
+            // Créer nouvelle ligne si on a au moins 2 points
+            if (activeTrajectory && activeTrajectory.points.length > 1) {
+                const latlngs = activeTrajectory.points.map(p => [p.lat, p.lng]);
+                directLine = L.polyline(latlngs, {
+                    color: '#FFFFFF',
+                    weight: 2,
+                    opacity: 0.6,
+                    dashArray: '10, 10'
+                }).addTo(map);
+            }
+        }
+        
+        function clearTrajectoryMarkers() {
+            trajectoryMarkers.forEach(marker => {
+                if (marker && map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+            });
+            trajectoryMarkers = [];
+        }
+        
+        // =================== CALCUL ITINÉRAIRES ===================
+        function calculateAllRoutes() {
+            if (!activeTrajectory || activeTrajectory.points.length < 2) {
+                alert('Ajoutez au moins 2 points pour calculer un itinéraire');
+                return;
+            }
+            
+            updateStatus('Calcul des itinéraires en cours...');
+            
+            // Calculer pour tous les modes de transport
+            const transports = ['foot', 'car', 'bike', 'military'];
+            transports.forEach(transport => {
+                calculateRouteForTransport(transport);
+            });
+            
+            updateTransportStats();
+            showInstructions();
+            
+            updateStatus('Itinéraires calculés');
+        }
+        
+        function calculateRouteForTransport(transport) {
+            // Nettoyer ancienne route
+            if (routeLayers[transport] && map.hasLayer(routeLayers[transport])) {
+                map.removeLayer(routeLayers[transport]);
+            }
+            
+            if (activeTrajectory.points.length > 1) {
+                const directDistance = calculateDirectDistance();
+                const detourFactor = getDetourFactor(transport);
+                const estimatedDistance = directDistance * detourFactor;
+                const duration = Math.round((estimatedDistance / CONFIG.speeds[transport]) * 60);
+                
+                const style = {
+                    color: CONFIG.colors[transport],
+                    weight: transport === 'military' ? 5 : 3,
+                    opacity: 0.8,
+                    dashArray: transport === 'bike' ? '8, 8' : null
+                };
+                
+                const latlngs = activeTrajectory.points.map(p => [p.lat, p.lng]);
+                routeLayers[transport] = L.polyline(latlngs, style).addTo(map);
+                
+                const hours = Math.floor(duration / 60);
+                const minutes = duration % 60;
+                
+                routeLayers[transport].bindPopup(`
+                    <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
+                        <strong style="color: ${CONFIG.colors[transport]};">${getTransportName(transport).toUpperCase()}</strong><br>
+                        <strong>Distance:</strong> ${estimatedDistance.toFixed(2)} km<br>
+                        <strong>Durée:</strong> ${hours > 0 ? hours + 'h' : ''}${minutes}min<br>
+                        <strong>Vitesse:</strong> ${CONFIG.speeds[transport]} km/h
+                    </div>
+                `);
+            }
+        }
+        
+        function calculateDirectDistance() {
+            if (!activeTrajectory || activeTrajectory.points.length < 2) return 0;
+            
+            let total = 0;
+            for (let i = 1; i < activeTrajectory.points.length; i++) {
+                const p1 = activeTrajectory.points[i-1];
+                const p2 = activeTrajectory.points[i];
+                const dist = L.latLng(p1.lat, p1.lng).distanceTo(L.latLng(p2.lat, p2.lng));
+                total += dist / 1000; // Convertir en km
+            }
+            return total;
+        }
+        
+        function calculateLineDistance(latlngs) {
+            let total = 0;
+            for (let i = 1; i < latlngs.length; i++) {
+                total += latlngs[i-1].distanceTo(latlngs[i]);
+            }
+            return total;
+        }
+        
+        function calculatePolygonArea(latlngs) {
+            if (!latlngs || latlngs.length < 3) return 0;
+            
+            let area = 0;
+            const n = latlngs.length;
+            
+            for (let i = 0; i < n; i++) {
+                const j = (i + 1) % n;
+                area += latlngs[i].lng * latlngs[j].lat;
+                area -= latlngs[j].lng * latlngs[i].lat;
+            }
+            
+            area = Math.abs(area) / 2.0;
+            return area * 111 * 111;
+        }
+        
+        function getDetourFactor(transport) {
+            const factors = {
+                foot: 1.3,
+                car: 1.15,
+                bike: 1.25,
+                military: 1.1
+            };
+            return factors[transport] || 1.2;
+        }
+        
+        function getTransportName(transport) {
+            const names = {
+                foot: 'Infanterie',
+                car: 'Véhicule',
+                bike: 'Moto/Vélo',
+                military: 'Militaire'
+            };
+            return names[transport] || transport;
+        }
+        
+        function updateTransportStats() {
+            const container = document.getElementById('transportStats');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            const transports = [
+                { id: 'foot', icon: '🚶', name: 'INFANTERIE' },
+                { id: 'car', icon: '🚗', name: 'VÉHICULE' },
+                { id: 'bike', icon: '🏍️', name: 'MOTO' },
+                { id: 'military', icon: '⚔️', name: 'MILITAIRE' }
+            ];
+            
+            transports.forEach(transport => {
+                if (!activeTrajectory || activeTrajectory.points.length < 2) {
+                    const div = document.createElement('div');
+                    div.className = 'transport-stat';
+                    div.innerHTML = `
+                        <div class="transport-icon">${transport.icon}</div>
+                        <div class="transport-distance">-- km</div>
+                        <div class="transport-duration">--</div>
+                    `;
+                    container.appendChild(div);
+                    return;
+                }
+                
+                const directDistance = calculateDirectDistance();
+                const detourFactor = getDetourFactor(transport.id);
+                const estimatedDistance = directDistance * detourFactor;
+                const duration = Math.round((estimatedDistance / CONFIG.speeds[transport.id]) * 60);
+                const hours = Math.floor(duration / 60);
+                const minutes = duration % 60;
+                
+                const div = document.createElement('div');
+                div.className = 'transport-stat';
+                div.onclick = () => highlightRoute(transport.id);
+                div.innerHTML = `
+                    <div class="transport-icon">${transport.icon}</div>
+                    <div class="transport-distance">${estimatedDistance.toFixed(1)} km</div>
+                    <div class="transport-duration">${hours > 0 ? hours + 'h' : ''}${minutes}min</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function highlightRoute(transport) {
+            // Réinitialiser toutes les routes
+            Object.keys(routeLayers).forEach(key => {
+                if (routeLayers[key] && map.hasLayer(routeLayers[key])) {
+                    routeLayers[key].setStyle({ opacity: 0.3, weight: 3 });
+                }
+            });
+            
+            // Mettre en évidence la route sélectionnée
+            if (routeLayers[transport] && map.hasLayer(routeLayers[transport])) {
+                routeLayers[transport].setStyle({ opacity: 1, weight: 5 });
+                routeLayers[transport].bringToFront();
+                routeLayers[transport].openPopup();
+                
+                showInstructionsForTransport(transport);
+            }
+        }
+        
+        function optimizeRoute() {
+            if (!activeTrajectory || activeTrajectory.points.length < 3) {
+                alert('Au moins 3 points requis pour l\'optimisation');
+                return;
+            }
+            
+            // Algorithme simple de tri par distance au centre
+            const center = map.getCenter();
+            const optimized = [...activeTrajectory.points].sort((a, b) => {
+                const distA = L.latLng(a.lat, a.lng).distanceTo(center);
+                const distB = L.latLng(b.lat, b.lng).distanceTo(center);
+                return distA - distB;
+            });
+            
+            // Mettre à jour les points
+            activeTrajectory.points = optimized;
+            
+            // Mettre à jour les marqueurs
+            clearTrajectoryMarkers();
+            activeTrajectory.points.forEach((point, index) => {
+                const marker = L.marker([point.lat, point.lng], {
+                    icon: L.divIcon({
+                        className: 'waypoint-marker pulse-marker',
+                        html: `<div style="background:#10B981;width:24px;height:24px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">${index + 1}</div>`,
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map);
+                trajectoryMarkers.push(marker);
+            });
+            
+            drawDirectLine();
+            clearRoute();
+            updateTrajectoryDisplay();
+            
+            saveAction('optimize_route');
+            updateStatus('Trajectoire optimisée');
+        }
+        
+        function reverseTrajectory() {
+            if (!activeTrajectory || activeTrajectory.points.length < 2) {
+                alert('Au moins 2 points requis pour inverser');
+                return;
+            }
+            
+            // Inverser l'ordre des points
+            activeTrajectory.points.reverse();
+            
+            // Mettre à jour les positions des marqueurs
+            trajectoryMarkers.forEach((marker, index) => {
+                if (marker && activeTrajectory.points[index]) {
+                    marker.setLatLng([activeTrajectory.points[index].lat, activeTrajectory.points[index].lng]);
+                    marker.setIcon(L.divIcon({
+                        className: 'waypoint-marker pulse-marker',
+                        html: `<div style="background:${activeTrajectory.color};width:24px;height:24px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">${index + 1}</div>`,
+                        iconSize: [24, 24]
+                    }));
+                }
+            });
+            
+            drawDirectLine();
+            clearRoute();
+            updateTrajectoryDisplay();
+            
+            saveAction('reverse_trajectory');
+            updateStatus('Trajectoire inversée');
+        }
+        
+        function clearRoute() {
+            Object.keys(routeLayers).forEach(key => {
+                if (routeLayers[key] && map.hasLayer(routeLayers[key])) {
+                    map.removeLayer(routeLayers[key]);
+                }
+                routeLayers[key] = null;
+            });
+            
+            if (directLine && map.hasLayer(directLine)) {
+                map.removeLayer(directLine);
+                directLine = null;
+            }
+            
+            updateTransportStats();
+            hideInstructions();
+        }
+        
+        function clearTrajectory() {
+            if (!activeTrajectory || !confirm('Vider toute la trajectoire ?')) return;
+            
+            clearTrajectoryMarkers();
+            clearRoute();
+            
+            activeTrajectory.points = [];
+            updateTrajectoryDisplay();
+            updateTransportStats();
+            updateStats();
+            
+            saveAction('clear_trajectory');
+            updateStatus('Trajectoire vidée');
+        }
+        
+        // =================== OUTILS CARTOGRAPHIQUES ===================
+        function changeMapType(type) {
+            currentMapType = type;
+            
+            // Retirer toutes les couches de tuiles
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Ajouter la nouvelle couche
+            L.tileLayer(CONFIG.mapLayers[type], {
+                attribution: '© Données cartographiques',
+                maxZoom: type === 'satellite' ? 19 : 17
+            }).addTo(map);
+            
+            // Réajouter les autres couches
+            if (gridLayer) map.addLayer(gridLayer);
+            drawnItems.addTo(map);
+            map.addLayer(waypointLayer);
+            
+            // Réajouter les marqueurs
+            positionMarkers.forEach(marker => {
+                if (marker) map.addLayer(marker);
+            });
+            trajectoryMarkers.forEach(marker => {
+                if (marker) map.addLayer(marker);
+            });
+            
+            // Réajouter les routes
+            Object.keys(routeLayers).forEach(key => {
+                if (routeLayers[key]) map.addLayer(routeLayers[key]);
+            });
+            
+            if (directLine) map.addLayer(directLine);
+            
+            updateStatus(`Carte basculée: ${type}`);
+        }
+        
+        function toggleGrid() {
+            if (gridLayer && map.hasLayer(gridLayer)) {
+                map.removeLayer(gridLayer);
+                gridLayer = null;
+                updateStatus('Grille désactivée');
+            } else {
+                gridLayer = L.layerGroup().addTo(map);
+                
+                // Grille militaire (degrés)
+                for (let lat = 6; lat < 11; lat += 0.5) {
+                    for (let lng = 0; lng < 2; lng += 0.5) {
+                        L.rectangle([[lat, lng], [lat + 0.5, lng + 0.5]], {
+                            color: 'rgba(255,215,0,0.2)',
+                            weight: 1,
+                            fill: false,
+                            className: 'grid-cell'
+                        }).addTo(gridLayer);
+                    }
+                }
+                updateStatus('Grille militaire activée');
+            }
+        }
+        
+        function toggleHeatmap() {
+            updateStatus('Fonctionnalité carte thermique nécessite la bibliothèque leaflet.heat');
+        }
+        
+        function centerOnTogo() {
+            map.setView(CONFIG.defaultCenter, CONFIG.defaultZoom);
+            updateStatus('Centré sur le Togo');
+        }
+        
+        function startDistanceMeasure() {
+            if (drawControl && map.hasControl(drawControl)) {
+                map.removeControl(drawControl);
+            }
+            
+            drawControl = new L.Control.Draw({
+                draw: {
+                    polyline: {
+                        shapeOptions: { color: '#3B82F6', weight: 3 }
+                    },
+                    polygon: false,
+                    circle: false,
+                    rectangle: false,
+                    marker: false,
+                    circlemarker: false
+                },
+                edit: { featureGroup: drawnItems }
+            });
+            
+            map.addControl(drawControl);
+            updateStatus('Mode mesure de distance - Dessinez une ligne');
+        }
+        
+        function startAreaMeasure() {
+            if (drawControl && map.hasControl(drawControl)) {
+                map.removeControl(drawControl);
+            }
+            
+            drawControl = new L.Control.Draw({
+                draw: {
+                    polygon: {
+                        shapeOptions: { color: '#10B981', weight: 2 }
+                    },
+                    polyline: false,
+                    circle: false,
+                    rectangle: false,
+                    marker: false,
+                    circlemarker: false
+                },
+                edit: { featureGroup: drawnItems }
+            });
+            
+            map.addControl(drawControl);
+            updateStatus('Mode mesure de surface - Dessinez un polygone');
+        }
+        
+        function toggleDraw(type) {
+            if (drawControl && map.hasControl(drawControl)) {
+                map.removeControl(drawControl);
+            }
+            
+            const options = {
+                polygon: {
+                    draw: {
+                        polygon: {
+                            shapeOptions: { color: '#DC2626', weight: 2 }
+                        },
+                        polyline: false,
+                        circle: false,
+                        rectangle: false,
+                        marker: false,
+                        circlemarker: false
+                    }
+                }
+            };
+            
+            drawControl = new L.Control.Draw({
+                draw: options[type]?.draw || {},
+                edit: { featureGroup: drawnItems }
+            });
+            
+            map.addControl(drawControl);
+            updateStatus(`Mode dessin ${type} activé`);
+        }
+        
+        function clearMeasurements() {
+            drawnItems.clearLayers();
+            clearTwoPointTrajectories();
+            updateStatus('Toutes les mesures effacées');
+        }
+        
+        function addMilitaryMarker() {
+            const center = map.getCenter();
+            const label = prompt('Nom du marqueur militaire:', 'Base Militaire');
+            if (!label) return;
+            
+            addCustomLabeledMarker(center, label, 'military');
+        }
+        
+        // =================== INSTRUCTIONS ===================
+        function showInstructions() {
+            if (!activeTrajectory || activeTrajectory.points.length < 2) return;
+            
+            const panel = document.getElementById('instructionsPanel');
+            const content = document.getElementById('instructionsContent');
+            
+            if (!panel || !content) return;
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Trajectoire:</strong> ${activeTrajectory.name}
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Points:</strong> ${activeTrajectory.points.length}
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Distance directe:</strong> ${calculateDirectDistance().toFixed(2)} km
+                </div>
+                <hr style="margin: 0.4rem 0; border-color: #4a5568;">
+                <div style="font-size: 0.75rem; color: var(--fat-gold);">
+                    Sélectionnez un mode de transport
+                </div>
+            `;
+            
+            panel.style.display = 'block';
+        }
+        
+        function showInstructionsForTransport(transport) {
+            const content = document.getElementById('instructionsContent');
+            if (!content) return;
+            
+            const directDistance = calculateDirectDistance();
+            const detourFactor = getDetourFactor(transport);
+            const estimatedDistance = directDistance * detourFactor;
+            const duration = Math.round((estimatedDistance / CONFIG.speeds[transport]) * 60);
+            const hours = Math.floor(duration / 60);
+            const minutes = duration % 60;
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Mode:</strong> ${getTransportName(transport)}
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Distance estimée:</strong> ${estimatedDistance.toFixed(2)} km
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Durée estimée:</strong> ${hours > 0 ? hours + 'h' : ''}${minutes}min
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Vitesse moyenne:</strong> ${CONFIG.speeds[transport]} km/h
+                </div>
+                <div style="margin-bottom: 0.4rem;">
+                    <strong>Points de passage:</strong> ${activeTrajectory.points.length}
+                </div>
+                <hr style="margin: 0.4rem 0; border-color: #4a5568;">
+                <div style="font-size: 0.7rem; color: #94A3B8;">
+                    <strong>Instructions:</strong><br>
+                    • Maintenir la formation<br>
+                    • Surveillance continue<br>
+                    • Points de contrôle réguliers
+                </div>
+            `;
+        }
+        
+        function hideInstructions() {
+            const panel = document.getElementById('instructionsPanel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // =================== UTILITAIRES SYSTÈME ===================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('collapsed');
+                setTimeout(() => {
+                    if (map) map.invalidateSize();
+                }, 300);
+            }
+        }
+        
+        function toggleFullScreen() {
+            isFullScreen = !isFullScreen;
+            document.body.classList.toggle('fullscreen', isFullScreen);
+            setTimeout(() => {
+                if (map) map.invalidateSize();
+            }, 300);
+            
+            updateStatus(isFullScreen ? 'Mode plein écran activé' : 'Mode plein écran désactivé');
+        }
+        
+        function updateCoordinates(latlng) {
+            const display = document.getElementById('coordinatesDisplay');
+            if (display && map) {
+                display.innerHTML = `
+                    <div>Lat: ${latlng.lat.toFixed(6)} | Lng: ${latlng.lng.toFixed(6)}</div>
+                    <div style="font-size: 0.7rem;">Zoom: ${map.getZoom()}</div>
+                `;
+            }
+        }
+        
+        function updateZoomDisplay() {
+            const display = document.getElementById('coordinatesDisplay');
+            if (display && map) {
+                const lines = display.innerHTML.split('<div style="font-size: 0.7rem;">');
+                display.innerHTML = `
+                    ${lines[0]}
+                    <div style="font-size: 0.7rem;">Zoom: ${map.getZoom()}</div>
+                `;
+            }
+        }
+        
+        function updateStats() {
+            const statsPositions = document.getElementById('statsPositions');
+            const statsTrajectoryPoints = document.getElementById('statsTrajectoryPoints');
+            const statsDistance = document.getElementById('statsDistance');
+            const statsArea = document.getElementById('statsArea');
+            
+            if (statsPositions) {
+                statsPositions.textContent = positions.length;
+            }
+            
+            if (statsTrajectoryPoints) {
+                const trajPoints = activeTrajectory ? activeTrajectory.points.length : 0;
+                statsTrajectoryPoints.textContent = trajPoints;
+            }
+            
+            if (statsDistance) {
+                if (activeTrajectory && activeTrajectory.points.length >= 2) {
+                    const distance = calculateDirectDistance();
+                    statsDistance.textContent = distance.toFixed(1) + ' km';
+                } else {
+                    statsDistance.textContent = '0 km';
+                }
+            }
+            
+            if (statsArea) {
+                if (positions.length > 1) {
+                    const lats = positions.map(p => p.lat);
+                    const lngs = positions.map(p => p.lng);
+                    const latSpan = Math.max(...lats) - Math.min(...lats);
+                    const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+                    const area = latSpan * lngSpan * 111 * 111;
+                    statsArea.textContent = area.toFixed(1) + ' km²';
+                } else {
+                    statsArea.textContent = '0 km²';
+                }
+            }
+        }
+        
+        function updateStatus(message) {
+            const statusElement = document.getElementById('status');
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+            
+            if (lastUpdateElement) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                lastUpdateElement.textContent = `Dernière mise à jour: ${timeString}`;
+            }
+            
+            console.log(`[${new Date().toLocaleTimeString('fr-FR')}] ${message}`);
+        }
+        
+        function saveAction(type, data = null) {
+            lastActions.push({
+                type: type,
+                data: data,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (lastActions.length > 50) {
+                lastActions.shift();
+            }
+        }
+        
+        function undoLastAction() {
+            if (lastActions.length === 0) {
+                updateStatus('Aucune action à annuler');
+                return;
+            }
+            
+            const lastAction = lastActions.pop();
+            
+            switch (lastAction.type) {
+                case 'add_position':
+                    if (positions.length > 0) {
+                        positions.pop();
+                        updatePositionList();
+                        updateMarkers();
+                        updateStats();
+                    }
+                    break;
+                    
+                case 'add_waypoint':
+                    if (activeTrajectory && activeTrajectory.points.length > 0) {
+                        removeWaypoint(activeTrajectory.points.length - 1);
+                    }
+                    break;
+                    
+                case 'add_labeled_marker':
+                    if (labeledMarkers.length > 0) {
+                        const lastMarker = labeledMarkers.pop();
+                        if (lastMarker.marker && map.hasLayer(lastMarker.marker)) {
+                            map.removeLayer(lastMarker.marker);
+                        }
+                    }
+                    break;
+                    
+                case 'add_two_point_trajectory':
+                    if (twoPointTrajectories.length > 0) {
+                        const lastTrajectory = twoPointTrajectories.pop();
+                        if (lastTrajectory.trajectory && map.hasLayer(lastTrajectory.trajectory)) {
+                            map.removeLayer(lastTrajectory.trajectory);
+                        }
+                        if (lastTrajectory.startMarker && map.hasLayer(lastTrajectory.startMarker)) {
+                            map.removeLayer(lastTrajectory.startMarker);
+                        }
+                        if (lastTrajectory.endMarker && map.hasLayer(lastTrajectory.endMarker)) {
+                            map.removeLayer(lastTrajectory.endMarker);
+                        }
+                    }
+                    break;
+                    
+                default:
+                    updateStatus('Action non annulable');
+                    return;
+            }
+            
+            updateStatus('Dernière action annulée');
+        }
+        
+        // =================== EXPORT/IMPORT ===================
+        function exportToCSV() {
+            if (positions.length === 0) {
+                alert('Aucune position à exporter');
+                return;
+            }
+            
+            let csv = 'Nom,Latitude,Longitude,Date,Heure,Précision,Vitesse\n';
+            positions.forEach(p => {
+                csv += `"${p.name}",${p.lat},${p.lng},"${p.date || ''}","${p.time || ''}","${p.precision || ''}","${p.speed || ''}"\n`;
+            });
+            
+            downloadFile(csv, `positions_${Date.now()}.csv`, 'text/csv');
+            updateStatus('Positions exportées en CSV');
+        }
+        
+        function exportToKML() {
+            let kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>Données tactiques FAT</name>
+  <description>Export du système GeoHISTORY Pro MIL</description>`;
+            
+            if (positions.length > 0) {
+                positions.forEach(pos => {
+                    kml += `
+  <Placemark>
+    <name>${pos.name}</name>
+    <description>${pos.date || ''} ${pos.time || ''}
+Précision: ${pos.precision || 'N/A'}
+Vitesse: ${pos.speed || 'N/A'}</description>
+    <Point>
+      <coordinates>${pos.lng},${pos.lat},0</coordinates>
+    </Point>
+  </Placemark>`;
+                });
+            }
+            
+            if (activeTrajectory && activeTrajectory.points.length > 0) {
+                kml += `
+  <Placemark>
+    <name>${activeTrajectory.name}</name>
+    <LineString>
+      <coordinates>`;
+                
+                activeTrajectory.points.forEach(p => {
+                    kml += `${p.lng},${p.lat},0 `;
+                });
+                
+                kml += `</coordinates>
+    </LineString>
+  </Placemark>`;
+            }
+            
+            kml += '\n</Document>\n</kml>';
+            
+            downloadFile(kml, `mission_${Date.now()}.kml`, 'application/vnd.google-earth.kml+xml');
+            updateStatus('Données exportées en KML');
+        }
+        
+        function saveMission() {
+            const missionData = {
+                positions: positions,
+                trajectory: activeTrajectory,
+                labeledMarkers: labeledMarkers.map(m => ({
+                    label: m.label,
+                    type: m.type,
+                    latlng: m.latlng
+                })),
+                twoPointTrajectories: twoPointTrajectories.map(t => ({
+                    points: t.points,
+                    distance: t.distance
+                })),
+                timestamp: new Date().toISOString(),
+                version: 'GeoHISTORY Pro MIL V2'
+            };
+            
+            const json = JSON.stringify(missionData, null, 2);
+            downloadFile(json, `mission_${Date.now()}.json`, 'application/json');
+            updateStatus('Mission sauvegardée');
+        }
+        
+        function loadMission() {
+            updateStatus('Chargement de mission - En production, implémenter l\'upload de fichier');
+        }
+        
+        function exportMissionReport() {
+            let report = `RAPPORT DE MISSION - FORCES ARMÉES TOGOLAISES\n`;
+            report += `Date: ${new Date().toLocaleDateString('fr-FR')}\n`;
+            report += `Heure: ${new Date().toLocaleTimeString('fr-FR')}\n`;
+            report += `Système: GeoHISTORY Pro MIL V2\n`;
+            report += `\n=== POSITIONS (${positions.length}) ===\n`;
+            
+            positions.forEach((pos, i) => {
+                report += `${i+1}. ${pos.name}: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                if (pos.date || pos.time) {
+                    report += ` (${pos.date || ''} ${pos.time || ''})`;
+                }
+                if (pos.precision) {
+                    report += ` | Précision: ${pos.precision}`;
+                }
+                if (pos.speed) {
+                    report += ` | Vitesse: ${pos.speed}`;
+                }
+                report += '\n';
+            });
+            
+            if (activeTrajectory && activeTrajectory.points.length > 0) {
+                report += `\n=== TRAJECTOIRE: ${activeTrajectory.name} ===\n`;
+                report += `Points: ${activeTrajectory.points.length}\n`;
+                report += `Distance: ${calculateDirectDistance().toFixed(2)} km\n\n`;
+                
+                activeTrajectory.points.forEach((point, i) => {
+                    report += `WP${i+1}: ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}\n`;
+                });
+                
+                report += `\n=== ESTIMATIONS DE TRAJECTOIRE ===\n`;
+                const transports = ['foot', 'car', 'bike', 'military'];
+                transports.forEach(transport => {
+                    const directDistance = calculateDirectDistance();
+                    const detourFactor = getDetourFactor(transport);
+                    const estimatedDistance = directDistance * detourFactor;
+                    const duration = Math.round((estimatedDistance / CONFIG.speeds[transport]) * 60);
+                    const hours = Math.floor(duration / 60);
+                    const minutes = duration % 60;
+                    
+                    report += `${getTransportName(transport)}: ${estimatedDistance.toFixed(2)} km, ${hours > 0 ? hours + 'h' : ''}${minutes}min\n`;
+                });
+            }
+            
+            if (labeledMarkers.length > 0) {
+                report += `\n=== ÉTIQUETTES (${labeledMarkers.length}) ===\n`;
+                labeledMarkers.forEach((marker, i) => {
+                    report += `${i+1}. ${marker.label} (${getMarkerTypeName(marker.type)}): ${marker.latlng.lat.toFixed(6)}, ${marker.latlng.lng.toFixed(6)}\n`;
+                });
+            }
+            
+            if (twoPointTrajectories.length > 0) {
+                report += `\n=== TRAJECTOIRES ENTRE DEUX POINTS (${twoPointTrajectories.length}) ===\n`;
+                twoPointTrajectories.forEach((traj, i) => {
+                    report += `${i+1}. Distance: ${traj.distance.toFixed(2)} km\n`;
+                    report += `   Départ: ${traj.points[0].lat.toFixed(6)}, ${traj.points[0].lng.toFixed(6)}\n`;
+                    report += `   Arrivée: ${traj.points[1].lat.toFixed(6)}, ${traj.points[1].lng.toFixed(6)}\n`;
+                });
+            }
+            
+            report += `\n=== STATISTIQUES ===\n`;
+            report += `Total positions: ${positions.length}\n`;
+            report += `Points trajectoire: ${activeTrajectory ? activeTrajectory.points.length : 0}\n`;
+            report += `Étiquettes: ${labeledMarkers.length}\n`;
+            report += `Trajectoires 2 points: ${twoPointTrajectories.length}\n`;
+            
+            if (positions.length > 1) {
+                const lats = positions.map(p => p.lat);
+                const lngs = positions.map(p => p.lng);
+                const latSpan = Math.max(...lats) - Math.min(...lats);
+                const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+                const area = latSpan * lngSpan * 111 * 111;
+                report += `Zone couverte: ${area.toFixed(1)} km²\n`;
+            }
+            
+            report += `\n--- FIN DU RAPPORT ---\n`;
+            report += `Classifié: CONFIDENTIEL\n`;
+            report += `© Commandement FAT ${new Date().getFullYear()}`;
+            
+            downloadFile(report, `rapport_mission_${Date.now()}.txt`, 'text/plain');
+            updateStatus('Rapport de mission généré');
+        }
+        
+        function simulateFileUpload() {
+            const fakeData = `Coordonnées GPS:
+Latitude: 9.551017
+Longitude: 1.194132
+Précision: ±10m
+Vitesse: 0.0 km/h
+
+Coordonnées GPS:
+Latitude: 9.560000
+Longitude: 1.200000
+Précision: ±15m
+Vitesse: 5.2 km/h
+
+Coordonnées GPS:
+Latitude: 9.570000
+Longitude: 1.210000
+Précision: ±12m
+Vitesse: 7.8 km/h
+
+Coordonnées GPS:
+Latitude: 9.580000
+Longitude: 1.220000
+Précision: ±8m
+Vitesse: 12.5 km/h`;
+
+            const textInput = document.getElementById('textInput');
+            if (textInput) {
+                textInput.value = fakeData;
+            }
+            parseTextData();
+            updateStatus('Fichier simulé chargé avec succès');
+        }
+        
+        function loadExampleData() {
+            setTimeout(() => {
+                simulateFileUpload();
+                
+                createNewTrajectory();
+                setTimeout(() => {
+                    addPointToTrajectory(L.latLng(9.551017, 1.194132), 'Base Alpha');
+                    addPointToTrajectory(L.latLng(9.560000, 1.200000), 'Checkpoint 1');
+                    addPointToTrajectory(L.latLng(9.570000, 1.210000), 'Observation Post');
+                    calculateAllRoutes();
+                    highlightRoute('military');
+                    
+                    // Ajouter des étiquettes d'exemple
+                    setTimeout(() => {
+                        addCustomLabeledMarker(L.latLng(9.565000, 1.195000), 'Dépôt Ressources', 'resource');
+                        addCustomLabeledMarker(L.latLng(9.575000, 1.215000), 'Zone Dangereuse', 'danger');
+                        
+                        // Activer l'affichage des étiquettes
+                        labelsVisible = true;
+                        labelAllPositions();
+                        
+                        // Mettre à jour le bouton d'étiquettes
+                        const labelBtn = document.getElementById('labelDisplayBtn');
+                        if (labelBtn) {
+                            labelBtn.classList.add('active');
+                        }
+                    }, 1000);
+                }, 500);
+                
+                updateStatus('Données de test chargées - Système opérationnel');
+            }, 1500);
+        }
+        
+        function downloadFile(content, filename, mimeType) {
+            try {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            } catch (error) {
+                console.error('Erreur lors du téléchargement:', error);
+                alert('Erreur lors du téléchargement du fichier');
+            }
+        }
+    </script>
+</body>
+</html>
