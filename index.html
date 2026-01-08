@@ -149,16 +149,25 @@
                 shimmer 4s ease-in-out infinite 2s;
         }
         
-        /* Bouton fixé en bas */
-        .gps-access-btn {
+        /* Container pour les boutons */
+        .buttons-container {
             position: fixed;
             bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 22px 60px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        
+        /* Style commun pour les boutons */
+        .action-btn {
+            padding: 22px 50px;
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 18px;
@@ -170,16 +179,34 @@
                 0 0 0 1px rgba(255, 255, 255, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             letter-spacing: 0.5px;
-            z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            min-width: 200px;
         }
         
-        /* Icône du bouton */
+        /* Style spécifique pour le bouton CARTE */
+        .carte-btn {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            box-shadow: 
+                0 10px 30px rgba(16, 185, 129, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Style spécifique pour le bouton GPS */
+        .gps-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Icône des boutons */
         .btn-icon {
             font-size: 24px;
             transition: transform 0.3s ease;
@@ -191,8 +218,15 @@
         }
         
         /* Effets au survol */
-        .gps-access-btn:hover {
-            transform: translateX(-50%) translateY(-5px) scale(1.03);
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        .gps-btn:hover {
             background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             box-shadow: 
                 0 20px 50px rgba(59, 130, 246, 0.6),
@@ -200,21 +234,38 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
         
-        .gps-access-btn:hover .btn-icon {
+        .carte-btn:hover {
+            background: linear-gradient(135deg, #0da271 0%, #03644a 100%);
+            box-shadow: 
+                0 20px 50px rgba(16, 185, 129, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        .action-btn:hover .btn-icon {
             transform: translateX(3px) rotate(-5deg);
         }
         
         /* Effet au clic */
-        .gps-access-btn:active {
-            transform: translateX(-50%) translateY(-2px) scale(0.98);
+        .action-btn:active {
+            transform: translateY(-2px) scale(0.98);
             transition: all 0.1s ease;
+        }
+        
+        .gps-btn:active {
             box-shadow: 
                 0 8px 25px rgba(59, 130, 246, 0.5),
                 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
         
-        /* Animation de pulsation subtile */
-        @keyframes pulse-glow {
+        .carte-btn:active {
+            box-shadow: 
+                0 8px 25px rgba(16, 185, 129, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animation de pulsation */
+        @keyframes pulse-glow-blue {
             0% {
                 box-shadow: 
                     0 10px 30px rgba(59, 130, 246, 0.4),
@@ -232,12 +283,34 @@
             }
         }
         
-        .gps-access-btn {
-            animation: pulse-glow 3s ease-in-out infinite;
+        @keyframes pulse-glow-green {
+            0% {
+                box-shadow: 
+                    0 10px 30px rgba(16, 185, 129, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 10px 40px rgba(16, 185, 129, 0.6),
+                    0 0 0 1px rgba(255, 255, 255, 0.15);
+            }
+            100% {
+                box-shadow: 
+                    0 10px 30px rgba(16, 185, 129, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
         }
         
-        /* Effet de lueur derrière le bouton */
-        .gps-access-btn::after {
+        .gps-btn {
+            animation: pulse-glow-blue 3s ease-in-out infinite;
+        }
+        
+        .carte-btn {
+            animation: pulse-glow-green 3s ease-in-out infinite;
+        }
+        
+        /* Effet de lueur derrière les boutons */
+        .action-btn::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -245,32 +318,44 @@
             transform: translate(-50%, -50%);
             width: 120%;
             height: 120%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
             border-radius: 25px;
             z-index: -1;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
         
-        .gps-access-btn:hover::after {
+        .gps-btn::after {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+        }
+        
+        .carte-btn::after {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+        }
+        
+        .action-btn:hover::after {
             opacity: 1;
         }
         
-        /* Animation d'apparition du bouton */
+        /* Animation d'apparition des boutons */
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateX(-50%) translateY(100px);
+                transform: translateY(100px);
             }
             to {
                 opacity: 1;
-                transform: translateX(-50%) translateY(0);
+                transform: translateY(0);
             }
         }
         
-        .gps-access-btn {
+        .gps-btn {
             animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s both,
-                     pulse-glow 3s ease-in-out infinite 1.3s;
+                     pulse-glow-blue 3s ease-in-out infinite 1.3s;
+        }
+        
+        .carte-btn {
+            animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s both,
+                     pulse-glow-green 3s ease-in-out infinite 1.5s;
         }
         
         /* Indication de chargement */
@@ -300,13 +385,20 @@
                 max-height: 50vh;
             }
             
-            .gps-access-btn {
+            .buttons-container {
                 bottom: 25px;
-                padding: 20px 50px;
-                font-size: 18px;
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .action-btn {
+                padding: 20px 40px;
+                font-size: 16px;
                 border-radius: 16px;
                 width: 90%;
                 max-width: 400px;
+                min-width: auto;
             }
             
             .btn-icon {
@@ -326,10 +418,14 @@
                 max-height: 45vh;
             }
             
-            .gps-access-btn {
+            .buttons-container {
                 bottom: 20px;
+                gap: 12px;
+            }
+            
+            .action-btn {
                 padding: 18px 30px;
-                font-size: 16px;
+                font-size: 15px;
                 border-radius: 14px;
                 width: 95%;
                 gap: 12px;
@@ -361,10 +457,14 @@
                 max-height: 75vh;
             }
             
-            .gps-access-btn {
+            .buttons-container {
                 bottom: 15px;
-                padding: 15px 40px;
-                font-size: 16px;
+                flex-direction: row;
+            }
+            
+            .action-btn {
+                padding: 15px 30px;
+                font-size: 14px;
             }
         }
     </style>
@@ -376,14 +476,25 @@
         <img src="TRASEUR.png" alt="TRASEUR" class="main-image" id="main-image">
     </div>
 
-    <!-- Bouton d'accès GPS -->
-    <a href="https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/" 
-       class="gps-access-btn" 
-       id="gps-link" 
-       target="_blank">
-        <span class="btn-icon">📍</span>
-        <span class="btn-text">Accéder au Traceur GPS</span>
-    </a>
+    <!-- Conteneur des boutons -->
+    <div class="buttons-container">
+        <!-- Bouton CARTE -->
+        <a href="CARTE.html" 
+           class="action-btn carte-btn" 
+           id="carte-link">
+            <span class="btn-icon">🗺️</span>
+            <span class="btn-text">CARTE</span>
+        </a>
+        
+        <!-- Bouton d'accès GPS -->
+        <a href="https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/" 
+           class="action-btn gps-btn" 
+           id="gps-link" 
+           target="_blank">
+            <span class="btn-icon">📍</span>
+            <span class="btn-text">Accéder au Traceur GPS</span>
+        </a>
+    </div>
 
     <!-- Indication de chargement -->
     <div class="loading" id="loading">
@@ -409,6 +520,7 @@
             const image = document.getElementById('main-image');
             const loading = document.getElementById('loading');
             const gpsLink = document.getElementById('gps-link');
+            const carteLink = document.getElementById('carte-link');
             
             // Afficher l'indication de chargement
             loading.style.opacity = '1';
@@ -464,11 +576,11 @@
                 localStorage.setItem('codeTime', new Date().toISOString());
             }
             
-            // Mettre à jour le lien avec le code
+            // Mettre à jour le lien GPS avec le code
             gpsLink.href = `https://jeanskodoc.github.io/GEOTACTIC-S-CURIT-/?code=${encodeURIComponent(currentCode)}`;
             
-            // Effet sonore sur le bouton GPS
-            gpsLink.addEventListener('mouseenter', () => {
+            // Effet sonore sur les boutons
+            function playHoverSound(frequency) {
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
@@ -477,7 +589,7 @@
                     oscillator.connect(gainNode);
                     gainNode.connect(audioContext.destination);
                     
-                    oscillator.frequency.value = 600;
+                    oscillator.frequency.value = frequency;
                     oscillator.type = 'sine';
                     gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
                     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
@@ -487,28 +599,21 @@
                 } catch (e) {
                     // Audio non supporté
                 }
+            }
+            
+            // Effet sonore pour le bouton CARTE
+            carteLink.addEventListener('mouseenter', () => {
+                playHoverSound(500);
+            });
+            
+            // Effet sonore pour le bouton GPS
+            gpsLink.addEventListener('mouseenter', () => {
+                playHoverSound(600);
             });
             
             // Effet sonore sur l'image
             image.addEventListener('mouseenter', () => {
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.value = 400;
-                    oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
-                    
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.15);
-                } catch (e) {
-                    // Audio non supporté
-                }
+                playHoverSound(400);
             });
             
             // Effet de zoom au clic sur l'image
@@ -544,14 +649,23 @@
                 }
             });
             
-            // Effet de préparation au clic sur le bouton GPS
-            gpsLink.addEventListener('mousedown', () => {
-                gpsLink.style.transform = 'translateX(-50%) scale(0.95)';
-            });
+            // Effet de préparation au clic sur les boutons
+            function setupButtonEffects(button) {
+                button.addEventListener('mousedown', () => {
+                    button.style.transform = 'translateY(-2px) scale(0.95)';
+                });
+                
+                button.addEventListener('mouseup', () => {
+                    button.style.transform = 'translateY(-5px) scale(1.03)';
+                });
+                
+                button.addEventListener('mouseleave', () => {
+                    button.style.transform = 'translateY(0) scale(1)';
+                });
+            }
             
-            gpsLink.addEventListener('mouseup', () => {
-                gpsLink.style.transform = 'translateX(-50%) translateY(-5px) scale(1.03)';
-            });
+            setupButtonEffects(carteLink);
+            setupButtonEffects(gpsLink);
             
             // Gestion du clic droit sur l'image (protection optionnelle)
             image.addEventListener('contextmenu', (e) => {
